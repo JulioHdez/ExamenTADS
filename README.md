@@ -74,9 +74,6 @@ src/
 ├── views/                        # Vistas/páginas principales
 │   ├── Dashboard.vue            # Dashboard principal
 │   ├── Login.vue               # Página de inicio de sesión
-│   ├── Home.vue                # Página de inicio
-│   ├── About.vue               # Página acerca de
-│   └── Test.vue                # Página de pruebas
 ├── composables/                  # Lógica reutilizable
 │   ├── modals/                  # Composables para modales
 │   │   ├── useExportData.js    # Lógica de exportación
@@ -254,7 +251,7 @@ src/
 ## 🚀 Instrucciones de Uso
 
 ### 1. Inicio de Sesión
-- **Credenciales demo**: `admin@sistema.com` / `admin123`
+- **Credenciales demo**: `luisleal2.123654@gmail.com` / `admin123`
 - **Validación en tiempo real**: Verificación de formato de email
 - **Redirección automática**: Al dashboard tras login exitoso
 
