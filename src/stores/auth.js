@@ -18,20 +18,48 @@ export const useAuthStore = defineStore('auth', {
     async login(credentials) {
       this.loading = true
       try {
-        const response = await api.post('/auth/login', credentials)
-        const { token, user } = response.data
+        // Simular delay de red
+        await new Promise(resolve => setTimeout(resolve, 1000))
         
-        this.token = token
-        this.user = user
-        this.isAuthenticated = true
-        
-        localStorage.setItem('auth_token', token)
-        
-        return { success: true, data: response.data }
+        // Credenciales predeterminadas para demostración
+        const defaultCredentials = {
+          email: 'luisleal2.123654@gmail.com',
+          password: 'admin123'
+        }
+
+        // Simular que el backend no está disponible, usar credenciales predeterminadas
+        if (credentials.email === defaultCredentials.email && 
+            credentials.password === defaultCredentials.password) {
+          
+          // Simular respuesta del servidor
+          const mockResponse = {
+            token: 'mock-jwt-token-' + Date.now(),
+            user: {
+              id: 1,
+              name: 'Administrador',
+              email: credentials.email,
+              role: 'admin'
+            }
+          }
+          
+          this.token = mockResponse.token
+          this.user = mockResponse.user
+          this.isAuthenticated = true
+          
+          localStorage.setItem('auth_token', mockResponse.token)
+          
+          return { success: true, data: mockResponse }
+        } else {
+          // Credenciales incorrectas
+          return { 
+            success: false, 
+            error: 'Credenciales incorrectas' 
+          }
+        }
       } catch (error) {
         return { 
           success: false, 
-          error: error.response?.data?.message || 'Error al iniciar sesión' 
+          error: 'Error inesperado. Por favor, inténtalo de nuevo.' 
         }
       } finally {
         this.loading = false

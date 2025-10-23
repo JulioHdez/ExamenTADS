@@ -7,16 +7,21 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    BarChart: typeof import('./src/components/BarChart.vue')['default']
-    BaseModal: typeof import('./src/components/BaseModal.vue')['default']
-    ChartsSection: typeof import('./src/components/ChartsSection.vue')['default']
-    DashboardSidebar: typeof import('./src/components/DashboardSidebar.vue')['default']
-    ExportSection: typeof import('./src/components/ExportSection.vue')['default']
-    MetricCard: typeof import('./src/components/MetricCard.vue')['default']
-    MetricsGrid: typeof import('./src/components/MetricsGrid.vue')['default']
+    BarChart: typeof import('./src/components/charts/BarChart.vue')['default']
+    BaseModal: typeof import('./src/components/modals/BaseModal.vue')['default']
+    ChartsSection: typeof import('./src/components/charts/ChartsSection.vue')['default']
+    DarkModeToggle: typeof import('./src/components/ui/DarkModeToggle.vue')['default']
+    DashboardSidebar: typeof import('./src/components/layout/DashboardSidebar.vue')['default']
+    ExportDataModal: typeof import('./src/components/modals/ExportDataModal.vue')['default']
+    ExportSection: typeof import('./src/components/ui/ExportSection.vue')['default']
+    MetricCard: typeof import('./src/components/ui/MetricCard.vue')['default']
+    MetricsGrid: typeof import('./src/components/ui/MetricsGrid.vue')['default']
+    NotificationContainer: typeof import('./src/components/ui/NotificationContainer.vue')['default']
+    NotificationToast: typeof import('./src/components/ui/NotificationToast.vue')['default']
+    RiskFactorsModal: typeof import('./src/components/modals/RiskFactorsModal.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    Sidebar: typeof import('./src/components/Sidebar.vue')['default']
-    StudentRegisterModal: typeof import('./src/components/StudentRegisterModal.vue')['default']
+    Sidebar: typeof import('./src/components/layout/Sidebar.vue')['default']
+    StudentRegisterModal: typeof import('./src/components/modals/StudentRegisterModal.vue')['default']
   }
 }

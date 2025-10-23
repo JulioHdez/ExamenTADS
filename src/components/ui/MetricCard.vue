@@ -78,8 +78,15 @@ const trendIcon = computed(() => {
   padding: 1.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   border: 1px solid #e5e7eb;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease, border-color 0.3s ease;
   height: 100%;
+}
+
+/* Dark mode styles */
+.dark .metric-card {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
 .metric-card:hover {
@@ -116,6 +123,11 @@ const trendIcon = computed(() => {
   color: #6b7280;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  transition: color 0.3s ease;
+}
+
+.dark .metric-title {
+  color: #94a3b8;
 }
 
 .metric-value {
@@ -124,12 +136,22 @@ const trendIcon = computed(() => {
   color: #1f2937;
   margin-bottom: 0.5rem;
   line-height: 1;
+  transition: color 0.3s ease;
+}
+
+.dark .metric-value {
+  color: #f1f5f9;
 }
 
 .metric-subtitle {
   font-size: 0.875rem;
   color: #6b7280;
   margin-bottom: 0.75rem;
+  transition: color 0.3s ease;
+}
+
+.dark .metric-subtitle {
+  color: #94a3b8;
 }
 
 .metric-trend {

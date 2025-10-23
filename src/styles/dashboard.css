@@ -3,6 +3,12 @@
   display: flex;
   min-height: 100vh;
   background-color: #f8fafc;
+  transition: background-color 0.3s ease;
+}
+
+/* Dark mode dashboard */
+.dark .dashboard {
+  background-color: #0f172a;
 }
 
 /* Main Content */
@@ -22,11 +28,21 @@
   font-weight: bold;
   color: #1f2937;
   margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.dark .dashboard-title {
+  color: #f1f5f9;
 }
 
 .dashboard-subtitle {
   font-size: 1.125rem;
   color: #6b7280;
+  transition: color 0.3s ease;
+}
+
+.dark .dashboard-subtitle {
+  color: #94a3b8;
 }
 
 /* Responsive */

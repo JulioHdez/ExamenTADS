@@ -10,6 +10,13 @@ body {
   line-height: 1.6;
   color: #333;
   background-color: #f8f9fa;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark mode body */
+.dark body {
+  background-color: #0f172a;
+  color: #f1f5f9;
 }
 
 /* Utilidades */
@@ -72,6 +79,14 @@ body {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 2rem;
   margin-bottom: 2rem;
+  transition: all 0.3s ease;
+}
+
+/* Dark mode cards */
+.dark .card {
+  background: #1e293b;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  border: 1px solid #334155;
 }
 
 /* Formularios */
@@ -84,6 +99,11 @@ body {
   margin-bottom: 0.5rem;
   font-weight: 500;
   color: #555;
+  transition: color 0.3s ease;
+}
+
+.dark .form-label {
+  color: #e2e8f0;
 }
 
 .form-control {
@@ -92,7 +112,13 @@ body {
   border: 1px solid #ddd;
   border-radius: 5px;
   font-size: 1rem;
-  transition: border-color 0.3s ease;
+  transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark .form-control {
+  background-color: #334155;
+  border-color: #475569;
+  color: #f1f5f9;
 }
 
 .form-control:focus {

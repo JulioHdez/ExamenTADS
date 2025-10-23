@@ -1,0 +1,267 @@
+/* RiskFactorsModal Styles */
+.risk-factors-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: none;
+}
+
+.factor-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+}
+
+.selector-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.factor-dropdown {
+  padding: 1rem;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: white;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.factor-dropdown:focus {
+  outline: none;
+  border-color: #2C4068;
+  box-shadow: 0 0 0 3px rgba(44, 64, 104, 0.1);
+}
+
+.factor-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.factor-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #2C4068 0%, #1a2a4a 100%);
+  border-radius: 12px;
+  color: white;
+}
+
+.factor-icon {
+  font-size: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+}
+
+.factor-title h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.factor-subtitle {
+  margin: 0.5rem 0 0 0;
+  opacity: 0.9;
+  font-size: 0.95rem;
+}
+
+.factor-description,
+.factor-characteristics {
+  padding: 1.5rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border-left: 4px solid #2C4068;
+}
+
+.factor-description h4,
+.factor-characteristics h4 {
+  margin: 0 0 1rem 0;
+  color: #1f2937;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.factor-description p {
+  margin: 0;
+  line-height: 1.6;
+  color: #374151;
+}
+
+.characteristics-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.characteristics-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.characteristic-icon {
+  color: #2C4068;
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-top: 0.1rem;
+}
+
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #6b7280;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state h3 {
+  margin: 0 0 1rem 0;
+  color: #374151;
+  font-size: 1.25rem;
+}
+
+.empty-state p {
+  margin: 0;
+  line-height: 1.6;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-secondary {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+  background-color: #e5e7eb;
+}
+
+/* Dark Mode Styles */
+.dark .factor-selector {
+  background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+  border: 2px solid #4b5563;
+}
+
+.dark .selector-label {
+  color: #f9fafb;
+}
+
+.dark .factor-dropdown {
+  background-color: #1f2937;
+  border: 2px solid #4b5563;
+  color: #f9fafb;
+}
+
+.dark .factor-dropdown:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+.dark .factor-description,
+.dark .factor-characteristics {
+  background: #374151;
+  border-left: 4px solid #60a5fa;
+}
+
+.dark .factor-description h4,
+.dark .factor-characteristics h4 {
+  color: #f9fafb;
+}
+
+.dark .factor-description p {
+  color: #d1d5db;
+}
+
+.dark .characteristics-list li {
+  color: #d1d5db;
+}
+
+.dark .characteristic-icon {
+  color: #60a5fa;
+}
+
+.dark .empty-state {
+  color: #9ca3af;
+}
+
+.dark .empty-state h3 {
+  color: #f9fafb;
+}
+
+.dark .btn-secondary {
+  background-color: #374151;
+  color: #f9fafb;
+  border: 1px solid #4b5563;
+}
+
+.dark .btn-secondary:hover {
+  background-color: #4b5563;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .factor-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+  
+  .factor-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 2rem;
+  }
+  
+  
+  .empty-state {
+    padding: 2rem 1rem;
+  }
+}

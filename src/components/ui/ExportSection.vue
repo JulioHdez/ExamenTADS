@@ -116,6 +116,13 @@ const cancelExport = () => {
   padding: 1.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   border: 1px solid #e5e7eb;
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dark .export-card {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
 .export-card h3 {
@@ -123,6 +130,11 @@ const cancelExport = () => {
   font-weight: 600;
   color: #1f2937;
   margin-bottom: 1.5rem;
+  transition: color 0.3s ease;
+}
+
+.dark .export-card h3 {
+  color: #f1f5f9;
 }
 
 .export-form {
@@ -141,6 +153,11 @@ const cancelExport = () => {
   font-weight: 500;
   color: #374151;
   margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.dark .form-group label {
+  color: #e2e8f0;
 }
 
 .radio-group,
@@ -158,6 +175,12 @@ const cancelExport = () => {
   cursor: pointer;
   font-size: 0.875rem;
   color: #374151;
+  transition: color 0.3s ease;
+}
+
+.dark .radio-label,
+.dark .checkbox-label {
+  color: #f1f5f9;
 }
 
 .radio-label input[type="radio"],
@@ -170,7 +193,13 @@ const cancelExport = () => {
   border: 1px solid #d1d5db;
   border-radius: 6px;
   font-size: 0.875rem;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark .form-control {
+  background: #334155;
+  border-color: #475569;
+  color: #f1f5f9;
 }
 
 .form-control:focus {
@@ -213,10 +242,21 @@ const cancelExport = () => {
   background-color: white;
   color: #374151;
   border: 1px solid #d1d5db;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.dark .btn-secondary {
+  background-color: #334155;
+  color: #f1f5f9;
+  border-color: #475569;
 }
 
 .btn-secondary:hover {
   background-color: #f9fafb;
+}
+
+.dark .btn-secondary:hover {
+  background-color: #475569;
 }
 
 /* Responsive */
