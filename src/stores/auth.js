@@ -18,48 +18,39 @@ export const useAuthStore = defineStore('auth', {
     async login(credentials) {
       this.loading = true
       try {
-        // Simular delay de red
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        // Conectar al backend real
+        const response = await api.post('/docentes/login/email', {
+          email: credentials.email,
+          password: credentials.password
+        })
         
-        // Credenciales predeterminadas para demostración
-        const defaultCredentials = {
-          email: 'luisleal2.123654@gmail.com',
-          password: 'admin123'
-        }
-
-        // Simular que el backend no está disponible, usar credenciales predeterminadas
-        if (credentials.email === defaultCredentials.email && 
-            credentials.password === defaultCredentials.password) {
+        if (response.data.success) {
+          // Crear token simulado para el frontend
+          const token = 'jwt-token-' + Date.now()
           
-          // Simular respuesta del servidor
-          const mockResponse = {
-            token: 'mock-jwt-token-' + Date.now(),
-            user: {
-              id: 1,
-              name: 'Administrador',
-              email: credentials.email,
-              role: 'admin'
-            }
+          this.token = token
+          this.user = {
+            id: response.data.data.id_docente,
+            name: response.data.data.nombre,
+            email: response.data.data.email,
+            role: 'docente'
           }
-          
-          this.token = mockResponse.token
-          this.user = mockResponse.user
           this.isAuthenticated = true
           
-          localStorage.setItem('auth_token', mockResponse.token)
+          localStorage.setItem('auth_token', token)
           
-          return { success: true, data: mockResponse }
+          return { success: true, data: response.data }
         } else {
-          // Credenciales incorrectas
           return { 
             success: false, 
-            error: 'Credenciales incorrectas' 
+            error: response.data.message || 'Credenciales incorrectas' 
           }
         }
       } catch (error) {
+        console.error('Error en login:', error)
         return { 
           success: false, 
-          error: 'Error inesperado. Por favor, inténtalo de nuevo.' 
+          error: error.response?.data?.message || 'Error de conexión. Verifica que el backend esté ejecutándose.' 
         }
       } finally {
         this.loading = false
