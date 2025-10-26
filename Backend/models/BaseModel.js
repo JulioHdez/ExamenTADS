@@ -53,22 +53,22 @@ class BaseModel {
                 FETCH NEXT ${limit} ROWS ONLY
             `;
 
-            const result = await pool.request();
+            const request = pool.request();
             
             // Agregar parámetros dinámicamente
             params.forEach(param => {
-                result.input(param.name, mssql.VarChar, param.value);
+                request.input(param.name, mssql.VarChar, param.value);
             });
 
-            const data = await result.query(query);
+            const data = await request.query(query);
             
             // Obtener el total de registros para paginación
             const countQuery = `SELECT COUNT(*) as total FROM ${this.tableName} ${whereClause}`;
-            const countResult = await pool.request();
+            const countRequest = pool.request();
             params.forEach(param => {
-                countResult.input(param.name, mssql.VarChar, param.value);
+                countRequest.input(param.name, mssql.VarChar, param.value);
             });
-            const countData = await countResult.query(countQuery);
+            const countData = await countRequest.query(countQuery);
 
             return {
                 data: data.recordset,
@@ -88,9 +88,9 @@ class BaseModel {
     async findById(id) {
         try {
             const pool = await getConnection();
-            const result = await pool.request()
-                .input('id', mssql.Int, id)
-                .query(`SELECT * FROM ${this.tableName} WHERE ${this.idColumn} = @id`);
+            const request = pool.request();
+            request.input('id', mssql.Int, id);
+            const result = await request.query(`SELECT * FROM ${this.tableName} WHERE ${this.idColumn} = @id`);
             
             return result.recordset[0] || null;
         } catch (error) {
@@ -127,24 +127,68 @@ class BaseModel {
     async update(id, data) {
         try {
             const pool = await getConnection();
-            const columns = Object.keys(data);
+            
+            // Filtrar campos que no deben actualizarse directamente
+            const excludedFields = ['factores_seleccionados', 'calificaciones', 'grupos', 'observaciones'];
+            const columns = Object.keys(data).filter(key => 
+                key !== this.idColumn && !excludedFields.includes(key)
+            );
+            
+            if (columns.length === 0) {
+                console.log('No hay campos para actualizar');
+                return true;
+            }
+            
             const setClause = columns.map((col, index) => `${col} = @param${index}`).join(', ');
             
             const query = `
                 UPDATE ${this.tableName}
                 SET ${setClause}
-                OUTPUT INSERTED.*
                 WHERE ${this.idColumn} = @id
             `;
 
-            const request = pool.request().input('id', mssql.Int, id);
+            console.log('Query de actualización:', query);
+            console.log('Campos a actualizar:', columns);
+
+            const request = pool.request();
+            request.input('id', mssql.Int, id);
+            
+            // Especificar tipos de datos para cada parámetro
             columns.forEach((col, index) => {
-                request.input(`param${index}`, data[col]);
+                const value = data[col];
+                console.log(`Campo ${col}:`, value, typeof value);
+                
+                if (value === null || value === undefined) {
+                    request.input(`param${index}`, mssql.NVarChar, null);
+                } else if (typeof value === 'number') {
+                    if (Number.isInteger(value)) {
+                        request.input(`param${index}`, mssql.Int, value);
+                    } else {
+                        request.input(`param${index}`, mssql.Decimal(10, 2), value);
+                    }
+                } else if (typeof value === 'boolean') {
+                    request.input(`param${index}`, mssql.Bit, value);
+                } else if (value instanceof Date) {
+                    request.input(`param${index}`, mssql.DateTime, value);
+                } else if (typeof value === 'string') {
+                    // Determinar el tipo de string basado en la longitud
+                    if (value.length <= 50) {
+                        request.input(`param${index}`, mssql.VarChar(50), value);
+                    } else if (value.length <= 200) {
+                        request.input(`param${index}`, mssql.VarChar(200), value);
+                    } else {
+                        request.input(`param${index}`, mssql.Text, value);
+                    }
+                } else {
+                    request.input(`param${index}`, mssql.NVarChar, value);
+                }
             });
 
             const result = await request.query(query);
-            return result.recordset[0] || null;
+            console.log('Resultado de actualización:', result.rowsAffected[0]);
+            return result.rowsAffected[0] > 0;
         } catch (error) {
+            console.error('Error detallado en update:', error);
             throw new Error(`Error al actualizar registro en ${this.tableName}: ${error.message}`);
         }
     }
@@ -152,15 +196,29 @@ class BaseModel {
     // Eliminar un registro
     async delete(id) {
         try {
+            console.log(`Eliminando registro de ${this.tableName} con ID:`, id);
+            console.log(`Usando columna ID: ${this.idColumn}`);
+            
             const pool = await getConnection();
-            const result = await pool.request()
-                .input('id', mssql.Int, id)
-                .query(`DELETE FROM ${this.tableName} WHERE ${this.idColumn} = @id`);
+            const request = pool.request();
+            request.input('id', mssql.Int, id);
+            
+            const query = `DELETE FROM ${this.tableName} WHERE ${this.idColumn} = @id`;
+            console.log('Query de eliminación:', query);
+            
+            const result = await request.query(query);
+            console.log('Filas afectadas:', result.rowsAffected[0]);
             
             return result.rowsAffected[0] > 0;
         } catch (error) {
+            console.error(`Error al eliminar registro de ${this.tableName}:`, error);
             throw new Error(`Error al eliminar registro de ${this.tableName}: ${error.message}`);
         }
+    }
+
+    // Obtener el pool de conexiones
+    async getPool() {
+        return await getConnection();
     }
 
     // Ejecutar consulta personalizada

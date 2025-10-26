@@ -5,12 +5,16 @@ class Carrera extends BaseModel {
         super('carreras');
     }
 
-    // Obtener carreras activas
+    // Obtener todas las carreras activas
     async findActive() {
         try {
-            const pool = this.getPool();
-            const result = await pool.request()
-                .query(`SELECT * FROM ${this.tableName} WHERE activo = 1 ORDER BY nombre_carrera`);
+            const pool = await this.getPool();
+            const request = pool.request();
+            const result = await request.query(`
+                SELECT * FROM ${this.tableName} 
+                WHERE activo = 1 
+                ORDER BY nombre_carrera
+            `);
             
             return result.recordset;
         } catch (error) {
@@ -21,10 +25,13 @@ class Carrera extends BaseModel {
     // Buscar carrera por clave
     async findByClave(clave) {
         try {
-            const pool = this.getPool();
-            const result = await pool.request()
-                .input('clave', mssql.VarChar, clave)
-                .query(`SELECT * FROM ${this.tableName} WHERE clave_carrera = @clave`);
+            const pool = await this.getPool();
+            const request = pool.request();
+            request.input('clave', mssql.VarChar, clave);
+            const result = await request.query(`
+                SELECT * FROM ${this.tableName} 
+                WHERE clave_carrera = @clave AND activo = 1
+            `);
             
             return result.recordset[0] || null;
         } catch (error) {
@@ -37,8 +44,10 @@ class Carrera extends BaseModel {
         try {
             const query = `
                 SELECT 
+                    c.id_carrera,
                     c.nombre_carrera,
                     COUNT(e.id_estudiante) as total_estudiantes,
+                    COUNT(CASE WHEN e.estatus = 'Activo' THEN 1 END) as estudiantes_activos,
                     AVG(e.promedio_general) as promedio_carrera
                 FROM carreras c
                 LEFT JOIN estudiantes e ON c.id_carrera = e.id_carrera

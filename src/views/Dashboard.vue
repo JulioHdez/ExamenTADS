@@ -19,7 +19,7 @@
       </div>
 
       <!-- Métricas principales -->
-      <MetricsGrid />
+      <MetricsGrid @open-students-list="openStudentsListModal" />
 
       <!-- Sección de Gráficos -->
       <ChartsSection />
@@ -30,6 +30,20 @@
       :is-open="showStudentModal" 
       @close="closeStudentModal"
       @submit="handleStudentSubmit"
+    />
+    
+    <StudentsListModal 
+      :is-open="showStudentsListModal" 
+      @close="closeStudentsListModal"
+      @edit-student="openEditStudentModal"
+    />
+    
+    <StudentRegisterModal 
+      :is-open="showEditStudentModal" 
+      :student-to-edit="studentToEdit"
+      title="Actualización de Estudiante"
+      @close="closeEditStudentModal"
+      @submit="handleStudentUpdate"
     />
     
     <RiskFactorsModal 
@@ -51,6 +65,7 @@ import DashboardSidebar from '@/components/layout/DashboardSidebar.vue'
 import MetricsGrid from '@/components/ui/MetricsGrid.vue'
 import ChartsSection from '@/components/charts/ChartsSection.vue'
 import StudentRegisterModal from '@/components/modals/StudentRegisterModal.vue'
+import StudentsListModal from '@/components/modals/StudentsListModal.vue'
 import RiskFactorsModal from '@/components/modals/RiskFactorsModal.vue'
 import ExportDataModal from '@/components/modals/ExportDataModal.vue'
 import DarkModeToggle from '@/components/ui/DarkModeToggle.vue'
@@ -62,8 +77,13 @@ const isSidebarExpanded = ref(false)
 
 // Modal states
 const showStudentModal = ref(false)
+const showStudentsListModal = ref(false)
+const showEditStudentModal = ref(false)
 const showRiskFactorsModal = ref(false)
 const showExportModal = ref(false)
+
+// Estado para el estudiante a editar
+const studentToEdit = ref(null)
 
 // Initialize dashboard data
 const { initializeData } = useDashboardData()
@@ -86,9 +106,31 @@ const handleSidebarToggle = (expanded) => {
   isSidebarExpanded.value = expanded
 }
 
+const openStudentsListModal = () => {
+  console.log('Abriendo modal de lista de estudiantes...')
+  showStudentsListModal.value = true
+  console.log('showStudentsListModal:', showStudentsListModal.value)
+}
+
+const openEditStudentModal = (student) => {
+  console.log('Abriendo modal de edición para:', student)
+  studentToEdit.value = student
+  showEditStudentModal.value = true
+}
+
 const closeStudentModal = () => {
   showStudentModal.value = false
   activeItem.value = 'dashboard'
+}
+
+const closeStudentsListModal = () => {
+  showStudentsListModal.value = false
+  activeItem.value = 'dashboard'
+}
+
+const closeEditStudentModal = () => {
+  showEditStudentModal.value = false
+  studentToEdit.value = null
 }
 
 const closeRiskFactorsModal = () => {
@@ -103,8 +145,18 @@ const closeExportModal = () => {
 
 const handleStudentSubmit = (studentData) => {
   console.log('Estudiante registrado exitosamente:', studentData)
-  // El estudiante ya fue guardado en la base de datos por el composable
-  // Aquí podrías mostrar una notificación de éxito
+  // La notificación de éxito ya se muestra desde el composable
+}
+
+const handleStudentUpdate = async (studentData) => {
+  console.log('Actualizando estudiante:', studentData)
+  try {
+    // Recargar la lista de estudiantes
+    await dashboardStore.fetchStudents()
+    console.log('Lista de estudiantes recargada después de la actualización')
+  } catch (error) {
+    console.error('Error al recargar estudiantes:', error)
+  }
 }
 
 const handleExportData = (exportData) => {

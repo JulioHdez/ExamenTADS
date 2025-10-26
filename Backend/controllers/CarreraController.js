@@ -6,29 +6,29 @@ class CarreraController extends BaseController {
         super(new Carrera());
     }
 
-    // Obtener carreras activas
-    async getActive(req, res) {
+    // Obtener todas las carreras
+    async getAll(req, res) {
         try {
-            const carreras = await this.model.findActive();
+            console.log('Obteniendo todas las carreras...');
+            const carreras = await this.model.findAll();
+            console.log('Carreras encontradas:', carreras.length);
             
             res.json({
                 success: true,
-                data: carreras
+                data: carreras.data || carreras,
+                message: 'Carreras obtenidas exitosamente'
             });
         } catch (error) {
-            res.status(500).json({
-                success: false,
-                message: 'Error al obtener carreras activas',
-                error: error.message
-            });
+            console.error('Error al obtener carreras:', error);
+            this.handleDatabaseError(error, res);
         }
     }
 
-    // Buscar carrera por clave
-    async getByClave(req, res) {
+    // Obtener carrera por ID
+    async getById(req, res) {
         try {
-            const { clave } = req.params;
-            const carrera = await this.model.findByClave(clave);
+            const { id } = req.params;
+            const carrera = await this.model.findById(id);
             
             if (!carrera) {
                 return res.status(404).json({
@@ -36,68 +36,30 @@ class CarreraController extends BaseController {
                     message: 'Carrera no encontrada'
                 });
             }
-
-            res.json({
-                success: true,
-                data: carrera
-            });
-        } catch (error) {
-            res.status(500).json({
-                success: false,
-                message: 'Error al buscar carrera por clave',
-                error: error.message
-            });
-        }
-    }
-
-    // Obtener estadísticas de carreras
-    async getStats(req, res) {
-        try {
-            const stats = await this.model.getStats();
             
             res.json({
                 success: true,
-                data: stats
+                data: carrera,
+                message: 'Carrera obtenida exitosamente'
             });
         } catch (error) {
-            res.status(500).json({
-                success: false,
-                message: 'Error al obtener estadísticas de carreras',
-                error: error.message
-            });
+            console.error('Error al obtener carrera:', error);
+            this.handleDatabaseError(error, res);
         }
     }
 
-    // Crear carrera con validaciones específicas
+    // Crear nueva carrera
     async create(req, res) {
         try {
-            const { clave_carrera, nombre_carrera, duracion_semestres } = req.body;
-
-            // Validar que la clave no exista
-            const existingCarrera = await this.model.findByClave(clave_carrera);
-            if (existingCarrera) {
-                return res.status(409).json({
-                    success: false,
-                    message: 'Ya existe una carrera con esta clave'
-                });
-            }
-
-            // Validar duración de semestres
-            if (duracion_semestres < 1 || duracion_semestres > 20) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'La duración debe estar entre 1 y 20 semestres'
-                });
-            }
-
-            const newCarrera = await this.model.create(req.body);
+            const carrera = await this.model.create(req.body);
             
             res.status(201).json({
                 success: true,
-                message: 'Carrera creada exitosamente',
-                data: newCarrera
+                data: carrera,
+                message: 'Carrera creada exitosamente'
             });
         } catch (error) {
+            console.error('Error al crear carrera:', error);
             this.handleDatabaseError(error, res);
         }
     }
@@ -106,34 +68,45 @@ class CarreraController extends BaseController {
     async update(req, res) {
         try {
             const { id } = req.params;
-            const { clave_carrera } = req.body;
-
-            // Si se está cambiando la clave, verificar que no exista
-            if (clave_carrera) {
-                const existingCarrera = await this.model.findByClave(clave_carrera);
-                if (existingCarrera && existingCarrera.id_carrera != id) {
-                    return res.status(409).json({
-                        success: false,
-                        message: 'Ya existe una carrera con esta clave'
-                    });
-                }
-            }
-
-            const updatedCarrera = await this.model.update(id, req.body);
+            const carrera = await this.model.update(id, req.body);
             
-            if (!updatedCarrera) {
+            if (!carrera) {
                 return res.status(404).json({
                     success: false,
                     message: 'Carrera no encontrada'
                 });
             }
-
+            
             res.json({
                 success: true,
-                message: 'Carrera actualizada exitosamente',
-                data: updatedCarrera
+                data: carrera,
+                message: 'Carrera actualizada exitosamente'
             });
         } catch (error) {
+            console.error('Error al actualizar carrera:', error);
+            this.handleDatabaseError(error, res);
+        }
+    }
+
+    // Eliminar carrera
+    async delete(req, res) {
+        try {
+            const { id } = req.params;
+            const deleted = await this.model.delete(id);
+            
+            if (!deleted) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Carrera no encontrada'
+                });
+            }
+            
+            res.json({
+                success: true,
+                message: 'Carrera eliminada exitosamente'
+            });
+        } catch (error) {
+            console.error('Error al eliminar carrera:', error);
             this.handleDatabaseError(error, res);
         }
     }

@@ -62,7 +62,7 @@ export const useDashboardStore = defineStore('dashboard', {
       this.loading = true
       console.log('fetchStudents llamado')
       try {
-        const response = await api.get('/estudiantes')
+        const response = await api.get('/estudiantes/with-carreras')
         console.log('Respuesta de la API:', response.data)
         
         // Verificar si la respuesta tiene la estructura esperada
@@ -86,7 +86,8 @@ export const useDashboardStore = defineStore('dashboard', {
 
     async createStudent(studentData) {
       try {
-        const response = await api.post('/estudiantes', studentData)
+        // Usar el endpoint completo que maneja factores y calificaciones
+        const response = await api.post('/estudiantes/complete', studentData)
         const newStudent = response.data.data || response.data
         this.students.push(newStudent)
         this.calculateMetrics()

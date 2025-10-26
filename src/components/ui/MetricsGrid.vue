@@ -1,6 +1,6 @@
 <template>
   <div class="metrics-grid">
-    <div class="metric-card">
+    <div class="metric-card clickable" @click="handleStudentsClick">
       <div class="metric-header">
         <div class="metric-icon">👥</div>
         <div class="metric-title">Total Estudiantes</div>
@@ -8,6 +8,7 @@
       <div class="metric-value">{{ totalStudents }}</div>
       <div class="metric-subtitle">Estudiantes registrados</div>
       <div class="metric-trend trend-up">+12%</div>
+      <div class="click-hint">Click para ver lista</div>
     </div>
     
     <div class="metric-card">
@@ -46,12 +47,20 @@
 import { computed } from 'vue'
 import { useDashboardStore } from '@/stores/dashboard'
 
+// Definir emits
+const emit = defineEmits(['open-students-list'])
+
 const dashboardStore = useDashboardStore()
 
 const totalStudents = computed(() => dashboardStore.metrics.totalStudents)
 const failureRate = computed(() => dashboardStore.metrics.failureRate)
 const dropoutRate = computed(() => dashboardStore.metrics.dropoutRate)
 const approvalRate = computed(() => dashboardStore.metrics.approvalRate)
+
+const handleStudentsClick = () => {
+  console.log('Clic en Total Estudiantes detectado')
+  emit('open-students-list')
+}
 </script>
 
 <style scoped>
@@ -82,6 +91,44 @@ const approvalRate = computed(() => dashboardStore.metrics.approvalRate)
 .metric-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.metric-card.clickable {
+  cursor: pointer;
+  position: relative;
+}
+
+.metric-card.clickable:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+}
+
+.dark .metric-card.clickable:hover {
+  background: linear-gradient(135deg, #1e293b, #334155);
+}
+
+.click-hint {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.metric-card.clickable:hover .click-hint {
+  opacity: 1;
+}
+
+.dark .click-hint {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
 }
 
 .metric-header {
