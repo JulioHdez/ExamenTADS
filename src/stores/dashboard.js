@@ -26,26 +26,26 @@ export const useDashboardStore = defineStore('dashboard', {
     isLoading: (state) => state.loading,
     getStudentsByAcademicPeriod: (state) => (period) => {
       if (period === 'all') return state.students
-      return state.students.filter(student => student.academicPeriod === period)
+      return state.students.filter(student => student.semestre_actual == period)
     },
     getStudentsByCareer: (state) => (career) => {
       if (career === 'all') return state.students
-      return state.students.filter(student => student.career === career)
+      return state.students.filter(student => student.nombre_carrera === career || student.id_carrera == career)
     },
     getChartData: (state) => {
       const periodData = {}
       
-      // Agrupar estudiantes por período académico
+      // Agrupar estudiantes por semestre actual
       state.students.forEach(student => {
-        const period = student.academicPeriod || 'Sin período'
-        periodData[period] = (periodData[period] || 0) + 1
+        const semestre = student.semestre_actual || 'Sin semestre'
+        periodData[semestre] = (periodData[semestre] || 0) + 1
       })
       
-      const labels = Object.keys(periodData).sort()
+      const labels = Object.keys(periodData).sort((a, b) => parseInt(a) - parseInt(b))
       const data = labels.map(label => periodData[label])
       
       return {
-        labels,
+        labels: labels.map(label => `Semestre ${label}`),
         datasets: [{
           label: 'Estudiantes',
           data,
@@ -62,9 +62,18 @@ export const useDashboardStore = defineStore('dashboard', {
       this.loading = true
       console.log('fetchStudents llamado')
       try {
-        const response = await api.get('/students')
-        this.students = response.data
+        const response = await api.get('/estudiantes')
+        console.log('Respuesta de la API:', response.data)
+        
+        // Verificar si la respuesta tiene la estructura esperada
+        if (response.data && response.data.success && response.data.data) {
+          this.students = response.data.data
+        } else {
+          this.students = response.data || []
+        }
+        
         this.calculateMetrics()
+        console.log('Estudiantes cargados:', this.students.length)
       } catch (error) {
         console.error('Error fetching students:', error)
         // Datos de ejemplo para desarrollo
@@ -77,10 +86,11 @@ export const useDashboardStore = defineStore('dashboard', {
 
     async createStudent(studentData) {
       try {
-        const response = await api.post('/students', studentData)
-        this.students.push(response.data)
+        const response = await api.post('/estudiantes', studentData)
+        const newStudent = response.data.data || response.data
+        this.students.push(newStudent)
         this.calculateMetrics()
-        return { success: true, data: response.data }
+        return { success: true, data: newStudent }
       } catch (error) {
         console.error('Error creating student:', error)
         return { 
@@ -92,13 +102,14 @@ export const useDashboardStore = defineStore('dashboard', {
 
     async updateStudent(id, studentData) {
       try {
-        const response = await api.put(`/students/${id}`, studentData)
-        const index = this.students.findIndex(s => s.id === id)
+        const response = await api.put(`/estudiantes/${id}`, studentData)
+        const updatedStudent = response.data.data || response.data
+        const index = this.students.findIndex(s => s.id_estudiante === id || s.id === id)
         if (index !== -1) {
-          this.students[index] = response.data
+          this.students[index] = updatedStudent
           this.calculateMetrics()
         }
-        return { success: true, data: response.data }
+        return { success: true, data: updatedStudent }
       } catch (error) {
         console.error('Error updating student:', error)
         return { 
@@ -110,8 +121,8 @@ export const useDashboardStore = defineStore('dashboard', {
 
     async deleteStudent(id) {
       try {
-        await api.delete(`/students/${id}`)
-        this.students = this.students.filter(s => s.id !== id)
+        await api.delete(`/estudiantes/${id}`)
+        this.students = this.students.filter(s => s.id_estudiante !== id && s.id !== id)
         this.calculateMetrics()
         return { success: true }
       } catch (error) {
@@ -136,9 +147,10 @@ export const useDashboardStore = defineStore('dashboard', {
         return
       }
 
-      const approved = this.students.filter(s => s.averageGrade >= 6).length
-      const failed = this.students.filter(s => s.averageGrade < 6).length
-      const atRisk = this.students.filter(s => s.riskFactors && s.riskFactors.length > 0).length
+      // Usar los campos reales de la base de datos
+      const approved = this.students.filter(s => (s.promedio_general || 0) >= 6).length
+      const failed = this.students.filter(s => (s.promedio_general || 0) < 6 && (s.promedio_general || 0) > 0).length
+      const atRisk = this.students.filter(s => s.estatus === 'Baja temporal' || s.estatus === 'Baja definitiva').length
 
       this.metrics = {
         totalStudents: total,

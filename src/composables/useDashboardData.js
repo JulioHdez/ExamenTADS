@@ -19,15 +19,15 @@ export function useDashboardData() {
   const filteredStudents = computed(() => {
     let students = dashboardStore.students
     
-    // Filtrar por período académico
+    // Filtrar por período académico (semestre)
     if (selectedPeriod.value !== 'all') {
-      students = students.filter(student => student.academicPeriod === selectedPeriod.value)
+      students = students.filter(student => student.semestre_actual == selectedPeriod.value)
     }
     
     // Filtrar por mes
     if (selectedMonth.value) {
       students = students.filter(student => {
-        const studentMonth = new Date(student.enrollmentDate || new Date()).getMonth() + 1
+        const studentMonth = new Date(student.fecha_ingreso || new Date()).getMonth() + 1
         return studentMonth === parseInt(selectedMonth.value)
       })
     }
@@ -35,7 +35,7 @@ export function useDashboardData() {
     // Filtrar por día
     if (selectedDay.value) {
       students = students.filter(student => {
-        const studentDay = new Date(student.enrollmentDate || new Date()).getDate()
+        const studentDay = new Date(student.fecha_ingreso || new Date()).getDate()
         return studentDay === parseInt(selectedDay.value)
       })
     }
@@ -43,30 +43,31 @@ export function useDashboardData() {
     return students
   })
 
-  // Bar chart data - distribución por período académico
+  // Bar chart data - distribución por semestre
   const chartData = computed(() => {
     const periodData = {}
     filteredStudents.value.forEach(student => {
-      periodData[student.academicPeriod] = (periodData[student.academicPeriod] || 0) + 1
+      const semestre = student.semestre_actual || 'Sin semestre'
+      periodData[semestre] = (periodData[semestre] || 0) + 1
     })
     
-    // Mapear los períodos a índices para el gráfico
-    const periods = ['2025-1', '2026-1', '2026-2', '2027-1', '2027-2']
-    return periods.map(period => periodData[period] || 0)
+    // Mapear los semestres a índices para el gráfico
+    const semestres = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+    return semestres.map(semestre => periodData[semestre] || 0)
   })
 
   // Etiquetas para el gráfico de barras
   const periodLabels = computed(() => {
-    return ['Ago-Dic 2025', 'Ene-May 2026', 'Ago-Dic 2026', 'Ene-May 2027', 'Ago-Dic 2027']
+    return ['Sem 1', 'Sem 2', 'Sem 3', 'Sem 4', 'Sem 5', 'Sem 6', 'Sem 7', 'Sem 8', 'Sem 9', 'Sem 10', 'Sem 11', 'Sem 12']
   })
 
   // Scatter chart data - correlación entre notas y asistencia
   const scatterData = computed(() => {
     return filteredStudents.value.map(student => ({
-      x: student.averageGrade * 10, // Convertir a escala 0-100
+      x: (student.promedio_general || 0) * 10, // Convertir a escala 0-100
       y: Math.random() * 100, // Simular asistencia
-      period: student.academicPeriod,
-      name: student.name
+      period: student.semestre_actual,
+      name: `${student.nombre} ${student.apellido_paterno}`
     }))
   })
 
@@ -78,9 +79,9 @@ export function useDashboardData() {
       return []
     }
     
-    const approved = filteredStudents.value.filter(student => student.averageGrade >= 6).length
-    const failed = filteredStudents.value.filter(student => student.averageGrade < 6).length
-    const atRisk = filteredStudents.value.filter(student => student.riskFactors && student.riskFactors.length > 0).length
+    const approved = filteredStudents.value.filter(student => (student.promedio_general || 0) >= 6).length
+    const failed = filteredStudents.value.filter(student => (student.promedio_general || 0) < 6 && (student.promedio_general || 0) > 0).length
+    const atRisk = filteredStudents.value.filter(student => student.estatus === 'Baja temporal' || student.estatus === 'Baja definitiva').length
     
     return [
       {
@@ -116,7 +117,7 @@ export function useDashboardData() {
         monthlyData[month] = { total: 0, approved: 0 }
       }
       monthlyData[month].total += 1
-      if (student.averageGrade >= 6) {
+      if ((student.promedio_general || 0) >= 6) {
         monthlyData[month].approved += 1
       }
     })

@@ -102,9 +102,9 @@ const closeExportModal = () => {
 }
 
 const handleStudentSubmit = (studentData) => {
-  console.log('Datos del estudiante:', studentData)
-  // Aquí puedes agregar la lógica para guardar el estudiante
-  // Por ejemplo, llamar a una API o actualizar el store
+  console.log('Estudiante registrado exitosamente:', studentData)
+  // El estudiante ya fue guardado en la base de datos por el composable
+  // Aquí podrías mostrar una notificación de éxito
 }
 
 const handleExportData = (exportData) => {

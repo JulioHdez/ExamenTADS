@@ -1,7 +1,9 @@
 import { ref, reactive, computed } from 'vue'
+import { useDashboardStore } from '@/stores/dashboard'
 
 export function useStudentRegister() {
   const isSubmitting = ref(false)
+  const dashboardStore = useDashboardStore()
 
   const formData = reactive({
     controlNumber: '',
@@ -114,6 +116,20 @@ export function useStudentRegister() {
     errors.grades[index] = ''
   }
 
+  // Mapear carreras del formulario a IDs de la base de datos
+  const getCareerId = (careerKey) => {
+    const careerMapping = {
+      'ingenieria-sistemas': 1,
+      'ingenieria-industrial': 2,
+      'administracion': 3,
+      'contabilidad': 4,
+      'psicologia': 5,
+      'medicina': 6,
+      'derecho': 7
+    }
+    return careerMapping[careerKey] || 1 // Por defecto Ingeniería en Sistemas
+  }
+
   const handleSubmit = async (emit) => {
     // Validar todos los campos antes de enviar
     const controlNumberError = validateField('controlNumber', formData.controlNumber)
@@ -134,17 +150,43 @@ export function useStudentRegister() {
     isSubmitting.value = true
     
     try {
-      // Simular delay de guardado
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Preparar datos para la API
+      const studentData = {
+        num_control: formData.controlNumber,
+        nombre: formData.name.split(' ')[0] || formData.name,
+        apellido_paterno: formData.name.split(' ')[1] || '',
+        apellido_materno: formData.name.split(' ')[2] || '',
+        genero: 'M', // Por defecto, se puede agregar al formulario después
+        email: `${formData.controlNumber}@estudiante.tec.com`, // Email generado
+        telefono: '', // Se puede agregar al formulario después
+        direccion: '', // Se puede agregar al formulario después
+        id_carrera: getCareerId(formData.career),
+        semestre_actual: parseInt(formData.semester),
+        fecha_ingreso: new Date().toISOString().split('T')[0],
+        estatus: 'Activo',
+        promedio_general: calculateAverage() !== '0.0' ? parseFloat(calculateAverage()) : null
+      }
       
-      // Emitir evento con los datos del formulario
-      emit('submit', { ...formData })
+      console.log('Enviando datos del estudiante:', studentData)
       
-      // Resetear formulario
-      resetForm()
+      // Enviar a la API usando el store
+      const result = await dashboardStore.createStudent(studentData)
       
-      // Cerrar modal
-      emit('close')
+      if (result.success) {
+        console.log('Estudiante creado exitosamente:', result.data)
+        
+        // Emitir evento con los datos del formulario
+        emit('submit', { ...formData })
+        
+        // Resetear formulario
+        resetForm()
+        
+        // Cerrar modal
+        emit('close')
+      } else {
+        console.error('Error al crear estudiante:', result.error)
+        // Aquí podrías mostrar un mensaje de error al usuario
+      }
       
     } catch (error) {
       console.error('Error al guardar estudiante:', error)
