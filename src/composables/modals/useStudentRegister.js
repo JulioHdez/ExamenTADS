@@ -1,12 +1,18 @@
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch, nextTick } from 'vue'
 import { useDashboardStore } from '@/stores/dashboard'
 import { useNotifications } from '@/composables/useNotifications'
+import { useMaterias } from '@/composables/useMaterias'
 import api from '@/services/api'
 
 export function useStudentRegister() {
   const isSubmitting = ref(false)
   const dashboardStore = useDashboardStore()
   const { showSuccess, showError } = useNotifications()
+  const { fetchMateriasCompletas, getCarreraName } = useMaterias()
+  
+  // Estado para materias disponibles
+  const materiasDisponibles = ref([])
+  const materiasCargando = ref(false)
 
   const formData = reactive({
     controlNumber: '',
@@ -39,9 +45,9 @@ export function useStudentRegister() {
         id_materia: null,
         nombre_materia: '',
         clave_materia: '',
-        creditos: 4,
-        horas_teoria: 2,
-        horas_practica: 2,
+        creditos: null,
+        horas_teoria: null,
+        horas_practica: null,
         clave_grupo: 'GRP001',
         semestre: '1',
         anio: new Date().getFullYear(),
@@ -547,14 +553,40 @@ export function useStudentRegister() {
     formData.grades.splice(index, 1)
   }
 
+  // Cargar materias cuando cambie la carrera
+  const cargarMateriasPorCarrera = async (carreraId) => {
+    if (!carreraId) {
+      return
+    }
+    
+    try {
+      materiasCargando.value = true
+      const materias = await fetchMateriasCompletas(carreraId)
+      materiasDisponibles.value = materias
+    } catch (error) {
+      console.error('Error al cargar materias:', error)
+      showError('Error al cargar materias disponibles')
+    } finally {
+      materiasCargando.value = false
+    }
+  }
+
+  // Watcher para cargar materias cuando cambie la carrera
+  watch(() => formData.career, (nuevaCarrera) => {
+    if (nuevaCarrera) {
+      const carreraId = getCareerId(nuevaCarrera)
+      cargarMateriasPorCarrera(carreraId)
+    }
+  })
+
   const addGrupo = () => {
     formData.grupos.push({
       id_materia: null,
       nombre_materia: '',
       clave_materia: '',
-      creditos: 4,
-      horas_teoria: 2,
-      horas_practica: 2,
+      creditos: null,
+      horas_teoria: null,
+      horas_practica: null,
       clave_grupo: `GRP${String(formData.grupos.length + 1).padStart(3, '0')}`,
       semestre: '1',
       anio: new Date().getFullYear(),
@@ -567,6 +599,31 @@ export function useStudentRegister() {
   const removeGrupo = (index) => {
     if (formData.grupos.length > 1) {
       formData.grupos.splice(index, 1)
+    }
+  }
+
+  // Seleccionar materia y llenar datos automáticamente
+  const seleccionarMateria = async (grupoIndex, materiaId) => {
+    try {
+      // Convertir a número si es necesario
+      const materiaIdNum = parseInt(materiaId)
+      
+      const materia = materiasDisponibles.value.find(m => m.id_materia === materiaIdNum)
+      
+      if (materia && formData.grupos[grupoIndex]) {
+        // Actualizar los datos del grupo
+        formData.grupos[grupoIndex].id_materia = materia.id_materia
+        formData.grupos[grupoIndex].nombre_materia = materia.nombre_materia
+        formData.grupos[grupoIndex].clave_materia = materia.clave_materia
+        formData.grupos[grupoIndex].creditos = materia.creditos
+        formData.grupos[grupoIndex].horas_teoria = materia.horas_teoria
+        formData.grupos[grupoIndex].horas_practica = materia.horas_practica
+        
+        // Forzar la actualización de la vista
+        await nextTick()
+      }
+    } catch (error) {
+      console.error('Error en seleccionarMateria:', error)
     }
   }
 
@@ -627,9 +684,9 @@ export function useStudentRegister() {
         id_materia: null,
         nombre_materia: '',
         clave_materia: '',
-        creditos: 4,
-        horas_teoria: 2,
-        horas_practica: 2,
+        creditos: null,
+        horas_teoria: null,
+        horas_practica: null,
         clave_grupo: 'GRP001',
         semestre: '1',
         anio: new Date().getFullYear(),
@@ -675,6 +732,11 @@ export function useStudentRegister() {
     clearGradeError,
     loadStudentData,
     getCareerKey,
-    getCareerId
+    getCareerId,
+    // Nuevas funciones para materias
+    materiasDisponibles,
+    materiasCargando,
+    cargarMateriasPorCarrera,
+    seleccionarMateria
   }
 }

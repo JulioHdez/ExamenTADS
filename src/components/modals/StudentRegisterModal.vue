@@ -253,6 +253,165 @@
         </div>
       </div>
 
+      <!-- Sección de Grupos -->
+      <div class="form-group full-width">
+        <div class="section-header">
+          <h3>Grupos del Estudiante</h3>
+          <button type="button" @click="addGrupo" class="add-btn">+ Agregar Grupo</button>
+        </div>
+        
+        <div v-for="(grupo, index) in formData.grupos" :key="index" class="grupo-item">
+          <div class="grupo-header">
+            <h4>Grupo {{ index + 1 }}</h4>
+            <button 
+              v-if="formData.grupos.length > 1" 
+              type="button" 
+              @click="removeGrupo(index)" 
+              class="remove-btn"
+            >
+              ✕
+            </button>
+          </div>
+          
+            <div class="form-row">
+              <div class="form-group materia-select-group">
+                <label :for="`materia_select_${index}`" class="form-label">Seleccionar Materia</label>
+                <select
+                  :id="`materia_select_${index}`"
+                  @change="handleMateriaChange(index, $event)"
+                  class="form-select"
+                  :disabled="materiasCargando"
+                >
+                  <option value="">-- Seleccione una materia --</option>
+                  <option 
+                    v-for="materia in materiasDisponibles" 
+                    :key="materia.id_materia"
+                    :value="materia.id_materia"
+                  >
+                    {{ materia.clave_materia }} - {{ materia.nombre_materia }}
+                  </option>
+                </select>
+                <div v-if="materiasCargando" class="loading-text">Cargando materias...</div>
+              </div>
+              
+              <div class="form-group creditos-group">
+                <label :for="`creditos_${index}`" class="form-label">Créditos</label>
+                <input
+                  :id="`creditos_${index}`"
+                  :value="grupo.creditos || ''"
+                  type="number"
+                  class="form-input readonly-field"
+                  readonly
+                  placeholder="Seleccione una materia"
+                />
+              </div>
+            </div>
+            
+            <div class="form-row">
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label :for="`horas_teoria_${index}`" class="form-label">Horas Teoría</label>
+              <input
+                :id="`horas_teoria_${index}`"
+                :value="grupo.horas_teoria || ''"
+                type="number"
+                class="form-input readonly-field"
+                readonly
+                placeholder="Seleccione una materia"
+              />
+            </div>
+            
+            <div class="form-group">
+              <label :for="`horas_practica_${index}`" class="form-label">Horas Práctica</label>
+              <input
+                :id="`horas_practica_${index}`"
+                :value="grupo.horas_practica || ''"
+                type="number"
+                class="form-input readonly-field"
+                readonly
+                placeholder="Seleccione una materia"
+              />
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label :for="`clave_grupo_${index}`" class="form-label">Clave del Grupo</label>
+              <input
+                :id="`clave_grupo_${index}`"
+                v-model="grupo.clave_grupo"
+                type="text"
+                class="form-input"
+                placeholder="Ej: GRP001"
+              />
+            </div>
+            
+            <div class="form-group">
+              <label :for="`semestre_${index}`" class="form-label">Semestre</label>
+              <select :id="`semestre_${index}`" v-model="grupo.semestre" class="form-select">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label :for="`anio_${index}`" class="form-label">Año</label>
+              <input
+                :id="`anio_${index}`"
+                v-model.number="grupo.anio"
+                type="number"
+                class="form-input"
+                :min="2020"
+                :max="2030"
+              />
+            </div>
+            
+            <div class="form-group">
+              <label :for="`periodo_${index}`" class="form-label">Período</label>
+              <select :id="`periodo_${index}`" v-model="grupo.periodo" class="form-select">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="Verano">Verano</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label :for="`horario_${index}`" class="form-label">Horario</label>
+              <input
+                :id="`horario_${index}`"
+                v-model="grupo.horario"
+                type="text"
+                class="form-input"
+                placeholder="Ej: Lunes 8:00-10:00"
+              />
+            </div>
+            
+            <div class="form-group">
+              <label :for="`aula_${index}`" class="form-label">Aula</label>
+              <input
+                :id="`aula_${index}`"
+                v-model="grupo.aula"
+                type="text"
+                class="form-input"
+                placeholder="Ej: A-101"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Sección de Calificaciones y Factores -->
       <div class="form-section-horizontal">
         <!-- Sección de Calificaciones -->
@@ -392,166 +551,6 @@
             </div>
           </div>
           
-        <!-- Sección de Grupos -->
-        <div class="form-group full-width">
-          <div class="section-header">
-            <h3>Grupos del Estudiante</h3>
-            <button type="button" @click="addGrupo" class="add-btn">+ Agregar Grupo</button>
-          </div>
-          
-          <div v-for="(grupo, index) in formData.grupos" :key="index" class="grupo-item">
-            <div class="grupo-header">
-              <h4>Grupo {{ index + 1 }}</h4>
-              <button 
-                v-if="formData.grupos.length > 1" 
-                type="button" 
-                @click="removeGrupo(index)" 
-                class="remove-btn"
-              >
-                ✕
-              </button>
-            </div>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label :for="`nombre_materia_${index}`" class="form-label">Nombre de la Materia</label>
-                <input
-                  :id="`nombre_materia_${index}`"
-                  v-model="grupo.nombre_materia"
-                  type="text"
-                  class="form-input"
-                  placeholder="Ej: Programación I"
-                />
-              </div>
-              
-              <div class="form-group">
-                <label :for="`clave_materia_${index}`" class="form-label">Clave de la Materia</label>
-                <input
-                  :id="`clave_materia_${index}`"
-                  v-model="grupo.clave_materia"
-                  type="text"
-                  class="form-input"
-                  placeholder="Ej: PROG001"
-                />
-              </div>
-            </div>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label :for="`creditos_${index}`" class="form-label">Créditos</label>
-                <input
-                  :id="`creditos_${index}`"
-                  v-model.number="grupo.creditos"
-                  type="number"
-                  class="form-input"
-                  :min="1"
-                  :max="10"
-                />
-              </div>
-              
-              <div class="form-group">
-                <label :for="`horas_teoria_${index}`" class="form-label">Horas Teoría</label>
-                <input
-                  :id="`horas_teoria_${index}`"
-                  v-model.number="grupo.horas_teoria"
-                  type="number"
-                  class="form-input"
-                  :min="0"
-                  :max="10"
-                />
-              </div>
-              
-              <div class="form-group">
-                <label :for="`horas_practica_${index}`" class="form-label">Horas Práctica</label>
-                <input
-                  :id="`horas_practica_${index}`"
-                  v-model.number="grupo.horas_practica"
-                  type="number"
-                  class="form-input"
-                  :min="0"
-                  :max="10"
-                />
-              </div>
-            </div>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label :for="`clave_grupo_${index}`" class="form-label">Clave del Grupo</label>
-                <input
-                  :id="`clave_grupo_${index}`"
-                  v-model="grupo.clave_grupo"
-                  type="text"
-                  class="form-input"
-                  placeholder="Ej: GRP001"
-                />
-              </div>
-              
-              <div class="form-group">
-                <label :for="`semestre_${index}`" class="form-label">Semestre</label>
-                <select :id="`semestre_${index}`" v-model="grupo.semestre" class="form-select">
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
-                  <option value="6">6</option>
-                  <option value="7">7</option>
-                  <option value="8">8</option>
-                  <option value="9">9</option>
-                  <option value="10">10</option>
-                  <option value="11">11</option>
-                  <option value="12">12</option>
-                </select>
-              </div>
-              
-              <div class="form-group">
-                <label :for="`anio_${index}`" class="form-label">Año</label>
-                <input
-                  :id="`anio_${index}`"
-                  v-model.number="grupo.anio"
-                  type="number"
-                  class="form-input"
-                  :min="2020"
-                  :max="2030"
-                />
-              </div>
-              
-              <div class="form-group">
-                <label :for="`periodo_${index}`" class="form-label">Período</label>
-                <select :id="`periodo_${index}`" v-model="grupo.periodo" class="form-select">
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="Verano">Verano</option>
-                </select>
-              </div>
-            </div>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label :for="`horario_${index}`" class="form-label">Horario</label>
-                <input
-                  :id="`horario_${index}`"
-                  v-model="grupo.horario"
-                  type="text"
-                  class="form-input"
-                  placeholder="Ej: Lunes 8:00-10:00"
-                />
-              </div>
-              
-              <div class="form-group">
-                <label :for="`aula_${index}`" class="form-label">Aula</label>
-                <input
-                  :id="`aula_${index}`"
-                  v-model="grupo.aula"
-                  type="text"
-                  class="form-input"
-                  placeholder="Ej: A-101"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- Campo de Observaciones -->
         <div class="form-group full-width">
           <label for="observaciones" class="form-label">Observaciones (Opcional)</label>
@@ -631,7 +630,12 @@ const {
   validateGradeField,
   clearError,
   clearGradeError,
-  loadStudentData
+  loadStudentData,
+  // Nuevas funciones para materias
+  materiasDisponibles,
+  materiasCargando,
+  cargarMateriasPorCarrera,
+  seleccionarMateria
 } = useStudentRegister()
 
 // Watcher para cargar datos del estudiante cuando se está editando
@@ -641,6 +645,11 @@ watch(() => props.studentToEdit, (newStudent) => {
     loadStudentData(newStudent)
   }
 }, { immediate: true })
+
+// Función wrapper para manejar el cambio de materia
+const handleMateriaChange = (grupoIndex, event) => {
+  seleccionarMateria(grupoIndex, event.target.value)
+}
 
 const handleSubmit = () => {
   if (props.studentToEdit) {

@@ -1,5 +1,7 @@
 const BaseController = require('./BaseController');
 const Docente = require('../models/Docente');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 class DocenteController extends BaseController {
     constructor() {
@@ -209,10 +211,33 @@ class DocenteController extends BaseController {
                 });
             }
 
+            // Generar token JWT
+            const token = jwt.sign(
+                { 
+                    id_docente: docente.id_docente,
+                    email: docente.email,
+                    nombre: docente.nombre,
+                    apellido_paterno: docente.apellido_paterno
+                },
+                process.env.JWT_SECRET || 'itt-tasd-secret-key',
+                { expiresIn: '24h' }
+            );
+
             res.json({
                 success: true,
                 message: 'Autenticación exitosa',
-                data: docente
+                data: {
+                    docente: {
+                        id_docente: docente.id_docente,
+                        nombre: docente.nombre,
+                        apellido_paterno: docente.apellido_paterno,
+                        apellido_materno: docente.apellido_materno,
+                        email: docente.email,
+                        especialidad: docente.especialidad,
+                        grado_academico: docente.grado_academico
+                    },
+                    token: token
+                }
             });
         } catch (error) {
             this.handleDatabaseError(error, res);
@@ -240,10 +265,33 @@ class DocenteController extends BaseController {
                 });
             }
 
+            // Generar token JWT
+            const token = jwt.sign(
+                { 
+                    id_docente: docente.id_docente,
+                    email: docente.email,
+                    nombre: docente.nombre,
+                    apellido_paterno: docente.apellido_paterno
+                },
+                process.env.JWT_SECRET || 'itt-tasd-secret-key',
+                { expiresIn: '24h' }
+            );
+
             res.json({
                 success: true,
                 message: 'Autenticación exitosa',
-                data: docente
+                data: {
+                    docente: {
+                        id_docente: docente.id_docente,
+                        nombre: docente.nombre,
+                        apellido_paterno: docente.apellido_paterno,
+                        apellido_materno: docente.apellido_materno,
+                        email: docente.email,
+                        especialidad: docente.especialidad,
+                        grado_academico: docente.grado_academico
+                    },
+                    token: token
+                }
             });
         } catch (error) {
             this.handleDatabaseError(error, res);

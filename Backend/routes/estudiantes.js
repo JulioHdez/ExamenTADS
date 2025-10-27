@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const EstudianteController = require('../controllers/EstudianteController');
+const { authenticateToken } = require('../middleware/auth');
 
 const estudianteController = new EstudianteController();
 
@@ -9,7 +10,7 @@ router.post('/initialize-carreras', (req, res) => estudianteController.initializ
 router.post('/initialize-materias', (req, res) => estudianteController.initializeMaterias(req, res));
 router.post('/initialize-all-tables', (req, res) => estudianteController.initializeAllTables(req, res));
 router.post('/simple', (req, res) => estudianteController.createSimple(req, res));
-router.post('/complete', (req, res) => estudianteController.createComplete(req, res));
+router.post('/complete', authenticateToken, (req, res) => estudianteController.createComplete(req, res));
 
 // Rutas básicas CRUD
 router.get('/', (req, res) => estudianteController.getAll(req, res));
@@ -24,7 +25,7 @@ router.get('/:id/factores', (req, res) => estudianteController.getFactores(req, 
 router.post('/:id/calcular-promedio', (req, res) => estudianteController.calcularPromedio(req, res));
 router.get('/:id/complete', (req, res) => estudianteController.getCompleteById(req, res));
 router.post('/', (req, res) => estudianteController.create(req, res));
-router.put('/:id', (req, res) => estudianteController.update(req, res));
+router.put('/:id', authenticateToken, (req, res) => estudianteController.update(req, res));
 router.delete('/:id', (req, res) => estudianteController.delete(req, res));
 
 module.exports = router;

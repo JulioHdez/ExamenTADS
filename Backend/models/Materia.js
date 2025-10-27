@@ -1,5 +1,5 @@
 const BaseModel = require('./BaseModel');
-const { mssql } = require('../config/connection');
+const { mssql, getConnection } = require('../config/connection');
 
 class Materia extends BaseModel {
     constructor() {
@@ -115,6 +115,67 @@ class Materia extends BaseModel {
             return result.recordset;
         } catch (error) {
             throw new Error(`Error al buscar materias por créditos: ${error.message}`);
+        }
+    }
+
+    // Obtener materias por carrera (basado en el prefijo de la clave)
+    async findByCarrera(carreraId) {
+        try {
+            const pool = await getConnection();
+            
+            // Mapeo de carreras a prefijos de materias
+            const carreraPrefixes = {
+                '2': 'ISC', // Ingeniería en Sistemas Computacionales
+                '3': 'IND', // Ingeniería Industrial
+                '4': 'ADM', // Administración
+                '5': 'CONT', // Contabilidad
+                '6': 'PSI', // Psicología
+                '7': 'MED', // Medicina
+                '8': 'DER'  // Derecho
+            };
+            
+            const prefix = carreraPrefixes[carreraId];
+            if (!prefix) {
+                throw new Error('Carrera no válida');
+            }
+            
+            const result = await pool.request()
+                .input('prefix', mssql.VarChar, `${prefix}%`)
+                .query(`
+                    SELECT * FROM ${this.tableName} 
+                    WHERE clave_materia LIKE @prefix
+                    AND activo = 1
+                    ORDER BY clave_materia
+                `);
+            
+            return result.recordset;
+        } catch (error) {
+            throw new Error(`Error al obtener materias por carrera: ${error.message}`);
+        }
+    }
+
+    // Obtener materias básicas comunes
+    async findBasicas() {
+        try {
+            const pool = await getConnection();
+            const result = await pool.request()
+                .query(`
+                    SELECT * FROM ${this.tableName} 
+                    WHERE clave_materia LIKE 'MAT%' 
+                       OR clave_materia LIKE 'EST%' 
+                       OR clave_materia LIKE 'ING%' 
+                       OR clave_materia LIKE 'FIL%' 
+                       OR clave_materia LIKE 'HIS%' 
+                       OR clave_materia LIKE 'COM%'
+                       OR clave_materia LIKE 'FIS%' 
+                       OR clave_materia LIKE 'QUI%'
+                    AND activo = 1
+                    ORDER BY clave_materia
+                `);
+            
+            return result.recordset;
+        } catch (error) {
+            throw new Error(`Error al obtener materias básicas: ${error.message}`);
         }
     }
 }

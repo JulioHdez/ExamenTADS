@@ -25,14 +25,14 @@ export const useAuthStore = defineStore('auth', {
         })
         
         if (response.data.success) {
-          // Crear token simulado para el frontend
-          const token = 'jwt-token-' + Date.now()
+          // Usar el token real del backend
+          const token = response.data.data.token
           
           this.token = token
           this.user = {
-            id: response.data.data.id_docente,
-            name: response.data.data.nombre,
-            email: response.data.data.email,
+            id: response.data.data.docente.id_docente,
+            name: response.data.data.docente.nombre,
+            email: response.data.data.docente.email,
             role: 'docente'
           }
           this.isAuthenticated = true

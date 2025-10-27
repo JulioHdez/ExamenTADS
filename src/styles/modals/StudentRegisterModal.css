@@ -681,6 +681,24 @@
   margin-bottom: 1rem;
 }
 
+.loading-text {
+  font-size: 12px;
+  color: #666;
+  font-style: italic;
+  margin-top: 5px;
+}
+
+/* Estilos para el layout de materia y créditos */
+.materia-select-group {
+  flex: 2;
+  min-width: 0;
+}
+
+.creditos-group {
+  flex: 1;
+  min-width: 120px;
+}
+
 .grupo-header {
   display: flex;
   justify-content: space-between;
@@ -738,4 +756,24 @@
 
 .dark .remove-btn:hover {
   background: #dc2626;
+}
+
+/* Campos de solo lectura */
+.readonly-field {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+  border: 1px solid #dee2e6;
+}
+
+.readonly-field:focus {
+  outline: none;
+  border-color: #dee2e6;
+  box-shadow: none;
+}
+
+.dark .readonly-field {
+  background-color: #374151;
+  color: #9ca3af;
+  border-color: #4b5563;
 }

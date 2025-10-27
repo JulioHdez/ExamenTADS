@@ -88,6 +88,43 @@ class MateriaController extends BaseController {
         }
     }
 
+    // Obtener materias por carrera
+    async getByCarrera(req, res) {
+        try {
+            const { carreraId } = req.params;
+            const materias = await this.model.findByCarrera(carreraId);
+            
+            res.json({
+                success: true,
+                data: materias
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Error al obtener materias por carrera',
+                error: error.message
+            });
+        }
+    }
+
+    // Obtener materias básicas comunes
+    async getBasicas(req, res) {
+        try {
+            const materias = await this.model.findBasicas();
+            
+            res.json({
+                success: true,
+                data: materias
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: 'Error al obtener materias básicas',
+                error: error.message
+            });
+        }
+    }
+
     // Buscar materias por nombre
     async searchByNombre(req, res) {
         try {
