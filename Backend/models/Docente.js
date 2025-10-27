@@ -135,9 +135,16 @@ class Docente extends BaseModel {
         }
     }
 
-    async verifyPassword(password, hashedPassword) {
+    async verifyPassword(password, storedPassword) {
         try {
-            return await bcrypt.compare(password, hashedPassword);
+            // Si la contraseña almacenada empieza con $2a$ o $2b$, es un hash de bcrypt
+            if (storedPassword && (storedPassword.startsWith('$2a$') || storedPassword.startsWith('$2b$'))) {
+                // Comparar con bcrypt
+                return await bcrypt.compare(password, storedPassword);
+            } else {
+                // Comparación en texto plano (para compatibilidad con contraseñas antiguas)
+                return password === storedPassword;
+            }
         } catch (error) {
             throw new Error(`Error al verificar contraseña: ${error.message}`);
         }

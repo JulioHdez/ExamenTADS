@@ -181,24 +181,34 @@ const handleLogin = async () => {
     // Usar el store de autenticación que ya maneja credenciales predeterminadas
     const result = await authStore.login(credentials)
     
-    if (result.success) {
+    console.log('Resultado del login:', result)
+    
+    if (result && result.success) {
+      console.log('Login exitoso, redirigiendo al dashboard...')
+      console.log('Token guardado:', authStore.token)
+      console.log('Usuario:', authStore.user)
+      
       showSuccess(
         '¡Bienvenido!',
         'Has iniciado sesión correctamente'
       )
-      router.push('/dashboard')
+      
+      // Redireccionar inmediatamente
+      await router.push('/dashboard')
+      console.log('Redirección completada')
     } else {
+      const errorMessage = result?.error || 'Credenciales incorrectas'
       showError(
-        'Credenciales incorrectas',
-        'El correo electrónico o la contraseña no son válidos. Por favor, verifica tus datos e inténtalo de nuevo.'
+        'Error al iniciar sesión',
+        errorMessage
       )
     }
   } catch (error) {
+    console.error('Error completo en login:', error)
     showError(
       'Error de conexión',
       'No se pudo conectar con el servidor. Por favor, inténtalo de nuevo más tarde.'
     )
-    console.error('Error en login:', error)
   } finally {
     loading.value = false
   }

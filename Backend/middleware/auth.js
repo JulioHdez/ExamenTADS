@@ -12,8 +12,9 @@ const authenticateToken = (req, res, next) => {
         });
     }
 
-    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    jwt.verify(token, process.env.JWT_SECRET || 'itt-tasd-secret-key', (err, user) => {
         if (err) {
+            console.error('Error al verificar token:', err.message)
             return res.status(403).json({
                 success: false,
                 message: 'Token inválido o expirado'
@@ -84,7 +85,7 @@ const optionalAuth = (req, res, next) => {
     const token = authHeader && authHeader.split(' ')[1];
 
     if (token) {
-        jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+        jwt.verify(token, process.env.JWT_SECRET || 'itt-tasd-secret-key', (err, user) => {
             if (!err) {
                 req.user = user;
             }

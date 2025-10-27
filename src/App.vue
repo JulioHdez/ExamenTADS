@@ -6,8 +6,19 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 import NotificationContainer from '@/components/ui/NotificationContainer.vue'
+
 console.log('App.vue está cargando correctamente')
+
+const authStore = useAuthStore()
+
+// Inicializar la autenticación al montar la app
+onMounted(() => {
+  console.log('App montada, inicializando autenticación...')
+  authStore.initializeAuth()
+})
 </script>
 
 <style>
