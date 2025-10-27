@@ -19,7 +19,7 @@ const apiRoutes = require('./routes');
 const app = express();
 
 // Configurar puerto
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Middlewares de seguridad
 app.use(helmet({

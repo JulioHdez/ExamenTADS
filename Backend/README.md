@@ -95,8 +95,8 @@ Backend/
    # Configuración de la Base de Datos
    DB_SERVER=localhost
    DB_DATABASE=ITT_TASD
-   DB_USER=sa
-   DB_PASSWORD=tu_password_aqui
+   DB_USER=app_user
+   DB_PASSWORD=En el wsp
    DB_PORT=1433
    DB_ENCRYPT=true
    DB_TRUST_SERVER_CERTIFICATE=true

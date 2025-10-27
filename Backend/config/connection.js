@@ -1,16 +1,17 @@
 const mssql = require("mssql");
 
 const connectionSettings = {
-    server: "localhost",
+    server: "itttasd.database.windows.net",
     port: 1433,
     database: process.env.DB_NAME || "ITT_TASD",
     user: process.env.DB_USER || "app_user",
-    password: process.env.DB_PASSWORD || "AppPassword123!",
+    password: process.env.DB_PASSWORD || "Password123!",
     options: {
-        encrypt: false,
-        trustServerCertificate: true,
+        encrypt: true,
+        trustServerCertificate: false,
         enableArithAbort: true,
         connectionTimeout: 30000,
+        requestTimeout: 30000,
         pool: {
             max: 10,
             min: 0,

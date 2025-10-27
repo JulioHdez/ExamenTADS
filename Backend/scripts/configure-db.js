@@ -16,7 +16,7 @@ function question(prompt) {
 }
 
 async function configureDatabase() {
-    console.log('🔧 Configurando conexión a SQL Server...\n');
+    console.log('Configurando conexión a SQL Server...\n');
 
     console.log('Por favor, proporciona la siguiente información:');
     console.log('(Presiona Enter para usar los valores por defecto)\n');

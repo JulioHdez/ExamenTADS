@@ -108,7 +108,8 @@ src/
 - **Login Seguro**: Autenticación con validación de credenciales
 - **Guards de Rutas**: Protección automática de rutas sensibles
 - **Gestión de Sesión**: Manejo de tokens y estado de autenticación
-- **Credenciales Demo**: Usuario: `admin@sistema.com` / Contraseña: `admin123`
+- **Credenciales Demo**: Usuario: `mguerrero@tec.com` / Contraseña: `Tasd123!`
+- **Otra opción**: Usuario: `docente@tec.com` / Contraseña: `Tasd123!`
 
 ### 📊 Dashboard Principal
 - **Métricas en Tiempo Real**: Total de estudiantes, tasas de aprobación/reprobación
