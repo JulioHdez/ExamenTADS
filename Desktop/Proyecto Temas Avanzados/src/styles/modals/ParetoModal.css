@@ -1,0 +1,707 @@
+/* ParetoModal Styles */
+.pareto-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  max-width: none;
+  min-height: 500px;
+}
+
+/* Selector de Semestre */
+.semester-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 12px;
+  border: 2px solid #e5e7eb;
+}
+
+.selector-label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.semester-dropdown {
+  padding: 1rem;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 1rem;
+  background-color: white;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.semester-dropdown:focus {
+  outline: none;
+  border-color: #2C4068;
+  box-shadow: 0 0 0 3px rgba(44, 64, 104, 0.1);
+}
+
+/* Sección de Generar */
+.generate-section {
+  display: flex;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.btn-generate {
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #2C4068 0%, #1a2a4a 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 12px rgba(44, 64, 104, 0.3);
+  min-width: 200px;
+  justify-content: center;
+}
+
+.btn-generate:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1a2a4a 0%, #2C4068 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(44, 64, 104, 0.4);
+}
+
+.btn-generate:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Botón de exportación */
+.export-button-container {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.btn-export-excel {
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.btn-export-excel:hover {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.btn-export-excel:active {
+  transform: translateY(0);
+}
+
+.export-icon {
+  font-size: 1.2rem;
+}
+
+/* Sección del Gráfico */
+.pareto-chart-section {
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chart-container {
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 1.5rem;
+  position: relative;
+  min-height: 300px;
+}
+
+.pareto-chart {
+  position: relative;
+  width: 100%;
+  height: 300px;
+}
+
+/* SVG para la línea de Pareto acumulada */
+.cumulative-line-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.cumulative-point {
+  cursor: pointer;
+  transition: r 0.2s ease;
+}
+
+.cumulative-point:hover {
+  r: 8;
+}
+
+.bars-container {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 100%;
+  gap: 0.5rem;
+  position: relative;
+}
+
+.bar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  min-width: 60px;
+  position: relative;
+}
+
+.bar-tooltip {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.tooltip-box {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(31, 41, 55, 0.95);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  margin-bottom: 0.5rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+  z-index: 10;
+}
+
+.tooltip-box strong {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.tooltip-box span {
+  display: block;
+  color: #d1d5db;
+}
+
+.bar-wrapper:hover .tooltip-box {
+  opacity: 1;
+}
+
+.pareto-bar {
+  width: 100%;
+  border-radius: 8px 8px 0 0;
+  min-height: 40px;
+  position: relative;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bar-value {
+  color: white;
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.bar-label {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 600;
+  margin-top: 0.5rem;
+  text-align: center;
+  word-wrap: break-word;
+  max-width: 100px;
+}
+
+/* Línea de porcentaje acumulado */
+.cumulative-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.cumulative-point {
+  position: absolute;
+  transform: translate(-50%, 50%);
+}
+
+.cumulative-value {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #374151;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Tabla de Datos */
+.data-table-section {
+  padding: 1.5rem;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.table-title {
+  margin: 0 0 1rem 0;
+  color: #1f2937;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.data-table thead {
+  background: linear-gradient(135deg, #2C4068 0%, #1a2a4a 100%);
+  color: white;
+}
+
+.data-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.data-table tbody tr {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background-color 0.2s ease;
+}
+
+.data-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.data-table tbody tr.highlight-row {
+  background-color: #dbeafe;
+  font-weight: 600;
+}
+
+.data-table td {
+  padding: 0.875rem 1rem;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+/* Leyenda */
+.legend-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.legend-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+
+.legend-text {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.875rem;
+}
+
+.legend-info {
+  text-align: right;
+}
+
+.legend-info p {
+  margin: 0;
+  font-size: 0.875rem;
+  font-style: italic;
+  color: #6b7280;
+}
+
+/* Estados vacíos */
+.empty-state,
+.initial-state,
+.loading-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: #6b7280;
+}
+
+.empty-icon,
+.initial-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.empty-state h3,
+.initial-state h3,
+.loading-state h3 {
+  margin: 0 0 1rem 0;
+  color: #374151;
+  font-size: 1.25rem;
+}
+
+.empty-state p,
+.initial-state p,
+.loading-state p {
+  margin: 0;
+  line-height: 1.6;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* Estado de carga */
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #2C4068;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1.5rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Botones */
+.btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btn-secondary {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+  background-color: #e5e7eb;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #2C4068 0%, #1a2a4a 100%);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #1a2a4a 0%, #2C4068 100%);
+}
+
+/* Dark Mode Styles */
+.dark .semester-selector {
+  background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+  border: 2px solid #4b5563;
+}
+
+.dark .selector-label {
+  color: #f9fafb;
+}
+
+.dark .semester-dropdown {
+  background-color: #1f2937;
+  border: 2px solid #4b5563;
+  color: #f9fafb;
+}
+
+.dark .semester-dropdown:focus {
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+}
+
+.dark .chart-container {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+.dark .bar-label {
+  color: #94a3af;
+}
+
+.dark .cumulative-value {
+  color: #f9fafb;
+  background: rgba(31, 41, 55, 0.9);
+}
+
+.dark .data-table-section {
+  background: #374151;
+  border-color: #4b5563;
+}
+
+.dark .table-title {
+  color: #f9fafb;
+}
+
+.dark .data-table {
+  background: #1f2937;
+}
+
+.dark .data-table tbody tr {
+  border-color: #374151;
+}
+
+.dark .data-table tbody tr:hover {
+  background-color: #374151;
+}
+
+.dark .data-table tbody tr.highlight-row {
+  background-color: #1e3a8a;
+}
+
+.dark .data-table td {
+  color: #d1d5db;
+}
+
+.dark .legend-section {
+  background: linear-gradient(135deg, #374151 0%, #4b5563 100%);
+  border-color: #4b5563;
+}
+
+.dark .legend-text {
+  color: #f9fafb;
+}
+
+.dark .legend-info p {
+  color: #94a3af;
+}
+
+.dark .empty-state,
+.dark .initial-state {
+  color: #9ca3af;
+}
+
+.dark .empty-state h3,
+.dark .initial-state h3 {
+  color: #f9fafb;
+}
+
+.dark .btn-secondary {
+  background-color: #374151;
+  color: #f9fafb;
+  border-color: #4b5563;
+}
+
+.dark .btn-secondary:hover {
+  background-color: #4b5563;
+}
+
+.dark .btn-export-excel {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+}
+
+.dark .btn-export-excel:hover {
+  background: linear-gradient(135deg, #047857 0%, #059669 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.5);
+}
+
+/* Estilos para dropdown de exportación */
+.export-dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.export-options {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 0.5rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 1000;
+  min-width: 200px;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.export-option-btn {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.export-option-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: #2C4068;
+}
+
+.export-option-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.export-option-btn:active:not(:disabled) {
+  background: #e5e7eb;
+}
+
+.option-icon {
+  font-size: 1.2rem;
+  width: 24px;
+  text-align: center;
+}
+
+.option-text {
+  flex: 1;
+}
+
+.dark .export-options {
+  background: #1f2937;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.dark .export-option-btn {
+  color: #e5e7eb;
+}
+
+.dark .export-option-btn:hover:not(:disabled) {
+  background: #374151;
+  color: #60a5fa;
+}
+
+.dark .export-option-btn:active:not(:disabled) {
+  background: #475569;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pareto-content {
+    min-height: auto;
+  }
+
+  .bars-container {
+    gap: 0.25rem;
+  }
+
+  .bar-wrapper {
+    min-width: 40px;
+  }
+
+  .bar-label {
+    font-size: 0.65rem;
+    max-width: 50px;
+  }
+
+  .data-table {
+    font-size: 0.75rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.5rem;
+  }
+
+  .legend-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .legend-info {
+    text-align: left;
+  }
+}
+
