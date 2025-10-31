@@ -21,6 +21,8 @@
     "apexcharts": "^5.3.5",
     "axios": "^1.6.2",
     "chart.js": "^4.4.0",
+    "exceljs": "^4.4.0",
+    "file-saver": "^2.0.5",
     "html2canvas": "^1.4.1",
     "jointjs": "^3.7.7",
     "jspdf": "^3.0.3",

@@ -37,6 +37,20 @@
             <option value="Baja definitiva">Baja definitiva</option>
           </select>
         </div>
+
+        <div class="filter-group">
+          <label for="page-size">Registros por página:</label>
+          <select 
+            id="page-size" 
+            v-model.number="pageSize" 
+            class="status-select"
+            @change="goToPage(1)"
+          >
+            <option :value="10">10</option>
+            <option :value="50">50</option>
+            <option :value="100">100</option>
+          </select>
+        </div>
       </div>
 
       <!-- Tabla de estudiantes -->
@@ -70,7 +84,7 @@
                   No se encontraron estudiantes
                 </td>
               </tr>
-              <tr v-else v-for="student in filteredStudents" :key="student.id_estudiante" class="student-row">
+              <tr v-else v-for="student in pagedStudents" :key="student.id_estudiante" class="student-row">
                 <td class="control-number">{{ student.num_control }}</td>
                 <td class="student-name">
                   {{ student.nombre }} {{ student.apellido_paterno }} {{ student.apellido_materno }}
@@ -102,6 +116,11 @@
               </tr>
             </tbody>
           </table>
+        </div>
+        <div class="pagination" v-if="totalPages > 1">
+          <button class="page-btn" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">Anterior</button>
+          <span class="page-info">Página {{ currentPage }} de {{ totalPages }}</span>
+          <button class="page-btn" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)">Siguiente</button>
         </div>
       </div>
     </div>
@@ -135,6 +154,8 @@ export default {
     const loading = ref(false)
     const selectedCareer = ref('')
     const selectedStatus = ref('')
+    const pageSize = ref(50)
+    const currentPage = ref(1)
 
     // Mapeo de carreras para mostrar nombres completos
     const careerMapping = {
@@ -160,6 +181,12 @@ export default {
       }
 
       return filtered
+    })
+
+    const totalPages = computed(() => Math.max(1, Math.ceil(filteredStudents.value.length / pageSize.value)))
+    const pagedStudents = computed(() => {
+      const start = (currentPage.value - 1) * pageSize.value
+      return filteredStudents.value.slice(start, start + pageSize.value)
     })
 
     // Métodos
@@ -210,6 +237,7 @@ export default {
 
     const filterStudents = () => {
       // El filtrado se hace automáticamente con el computed
+      currentPage.value = 1
     }
 
     const getStatusClass = (status) => {
@@ -253,6 +281,10 @@ export default {
       emit('edit-student', student)
     }
 
+    const goToPage = (page) => {
+      currentPage.value = Math.max(1, Math.min(page, totalPages.value))
+    }
+
     // Watchers
     watch(() => props.isOpen, (newValue) => {
       if (newValue) {
@@ -275,12 +307,17 @@ export default {
       loading,
       selectedCareer,
       selectedStatus,
+      pageSize,
+      currentPage,
       careerMapping,
       filteredStudents,
+      pagedStudents,
+      totalPages,
       filterStudents,
       getStatusClass,
       deleteStudent,
-      editStudent
+      editStudent,
+      goToPage
     }
   }
 }
@@ -366,6 +403,32 @@ export default {
 .table-wrapper {
   flex: 1;
   overflow: auto;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.page-btn {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.page-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.page-info {
+  color: var(--text-secondary);
 }
 
 .students-table {

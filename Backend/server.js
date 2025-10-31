@@ -14,6 +14,7 @@ const { errorHandler, notFound } = require('./middleware/errorHandler');
 
 // Importar rutas
 const apiRoutes = require('./routes');
+const path = require('path');
 
 // Crear aplicación Express
 const app = express();
@@ -51,6 +52,19 @@ if (process.env.NODE_ENV === 'development') {
 // Middleware para parsear JSON
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Servir archivos estáticos de la carpeta EXCEL (plantillas)
+const excelDir = path.join(__dirname, '..', 'EXCEL');
+app.use('/static', express.static(excelDir, {
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.xlsx')) {
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        } else if (filePath.endsWith('.csv')) {
+            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        }
+        res.setHeader('Cache-Control', 'no-store');
+    }
+}));
 
 // Middleware para manejar errores de base de datos
 const handleDBError = (error, req, res, next) => {

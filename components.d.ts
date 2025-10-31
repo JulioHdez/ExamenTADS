@@ -20,6 +20,7 @@ declare module 'vue' {
     FishboneDiagram: typeof import('./src/components/charts/FishboneDiagram.vue')['default']
     HistogramChart: typeof import('./src/components/charts/HistogramChart.vue')['default']
     HistogramModal: typeof import('./src/components/modals/HistogramModal.vue')['default']
+    ImportDataModal: typeof import('./src/components/modals/ImportDataModal.vue')['default']
     IshikawaChart: typeof import('./src/components/charts/IshikawaChart.vue')['default']
     IshikawaDiagram: typeof import('./src/components/charts/IshikawaDiagram.vue')['default']
     IshikawaFullscreen: typeof import('./src/components/modals/IshikawaFullscreen.vue')['default']

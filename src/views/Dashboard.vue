@@ -57,6 +57,12 @@
       @export="handleExportData"
     />
     
+    <ImportDataModal 
+      :is-open="showImportModal" 
+      @close="closeImportModal"
+      @imported="handleImportedData"
+    />
+    
     <ParetoModal 
       :is-open="showParetoModal" 
       @close="closeParetoModal"
@@ -95,6 +101,7 @@ import StudentRegisterModal from '@/components/modals/StudentRegisterModal.vue'
 import StudentsListModal from '@/components/modals/StudentsListModal.vue'
 import RiskFactorsModal from '@/components/modals/RiskFactorsModal.vue'
 import ExportDataModal from '@/components/modals/ExportDataModal.vue'
+import ImportDataModal from '@/components/modals/ImportDataModal.vue'
 import ParetoModal from '@/components/modals/ParetoModal.vue'
 import IshikawaModal from '@/components/modals/IshikawaModal.vue'
 import IshikawaFullscreen from '@/components/modals/IshikawaFullscreen.vue'
@@ -113,6 +120,7 @@ const showStudentsListModal = ref(false)
 const showEditStudentModal = ref(false)
 const showRiskFactorsModal = ref(false)
 const showExportModal = ref(false)
+const showImportModal = ref(false)
 const showParetoModal = ref(false)
 const showIshikawaModal = ref(false)
 const showIshikawaFullscreen = ref(false)
@@ -137,6 +145,8 @@ const setActiveItem = (itemId) => {
     showRiskFactorsModal.value = true
   } else if (itemId === 'export') {
     showExportModal.value = true
+  } else if (itemId === 'import') {
+    showImportModal.value = true
   } else if (itemId === 'pareto') {
     showParetoModal.value = true
   } else if (itemId === 'ishikawa') {
@@ -186,6 +196,11 @@ const closeRiskFactorsModal = () => {
 
 const closeExportModal = () => {
   showExportModal.value = false
+  activeItem.value = 'dashboard'
+}
+
+const closeImportModal = () => {
+  showImportModal.value = false
   activeItem.value = 'dashboard'
 }
 
@@ -239,6 +254,10 @@ const handleExportData = (exportData) => {
   console.log('Datos a exportar:', exportData)
   // Aquí puedes agregar la lógica para exportar los datos
   // Por ejemplo, llamar a una API o generar archivos
+}
+
+const handleImportedData = (result) => {
+  console.log('Resultado de importación:', result)
 }
 
 onMounted(() => {
