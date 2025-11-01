@@ -1,3 +1,3 @@
-num_control,nombre,apellido_paterno,apellido_materno,genero,fecha_nacimiento,email,telefono,direccion,id_carrera,semestre_actual,fecha_ingreso,estatus,promedio_general
-S23001234,Juan,Perez,López,M,2002-05-10,juan@example.com,5551234567,"Av. Siempre Viva 123",2,3,2021-08-15,Activo,88.5
-S23005678,María,Gómez,Hernández,F,2003-11-22,maria@example.com,5557654321,"Calle 2 #456",3,5,2020-08-20,Activo,89.0
+num_control,apellido_paterno,apellido_materno,nombre,genero,fecha_nacimiento,email,telefono,direccion,id_carrera,semestre_actual,fecha_ingreso,estatus,promedio_general
+S23001234,Perez,López,Juan,M,2002-05-10,juan@example.com,5551234567,"Av. Siempre Viva 123",2,3,2021-08-15,Activo,88.5
+S23005678,Gómez,Hernández,María,F,2003-11-22,maria@example.com,5557654321,"Calle 2 #456",3,5,2020-08-20,Activo,89.0

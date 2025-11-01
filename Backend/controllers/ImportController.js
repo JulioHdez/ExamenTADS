@@ -34,11 +34,12 @@ class ImportController {
 
             // Validar orden de columnas cuando se trate de estudiantes
             if (dataType === 'students' || dataType === 'studentData') {
+                // Orden alineado estrictamente con columnas en BD [dbo].[estudiantes]
                 const expectedOrder = [
                     'num_control',
-                    'nombre',
                     'apellido_paterno',
                     'apellido_materno',
+                    'nombre',
                     'genero',
                     'fecha_nacimiento',
                     'email',
@@ -47,7 +48,8 @@ class ImportController {
                     'id_carrera',
                     'semestre_actual',
                     'fecha_ingreso',
-                    'estatus'
+                    'estatus',
+                    'promedio_general'
                 ];
 
                 const normalized = headers.map(h => String(h || '').trim().toLowerCase());
