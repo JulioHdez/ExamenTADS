@@ -1,23 +1,24 @@
 <template>
   <Transition name="toast">
-    <div v-if="isVisible" class="notification-toast" :class="typeClass">
-      <div class="toast-content">
-        <div class="toast-icon">
-          <span v-if="type === 'error'">⚠️</span>
-          <span v-else-if="type === 'success'">✅</span>
-          <span v-else-if="type === 'warning'">⚠️</span>
-          <span v-else>ℹ️</span>
+      <div v-if="isVisible" class="notification-toast" :class="typeClass" :class="{ 'clickable': hasDetails }" @click="handleClick">
+        <div class="toast-content">
+          <div class="toast-icon">
+            <span v-if="type === 'error'">⚠️</span>
+            <span v-else-if="type === 'success'">✅</span>
+            <span v-else-if="type === 'warning'">⚠️</span>
+            <span v-else>ℹ️</span>
+          </div>
+          <div class="toast-message">
+            <h4 class="toast-title">{{ title }}</h4>
+            <p class="toast-description">{{ message }}</p>
+            <span v-if="hasDetails" class="toast-hint">Click para ver detalles</span>
+          </div>
+          <button @click.stop="close" class="toast-close">
+            <span>×</span>
+          </button>
         </div>
-        <div class="toast-message">
-          <h4 class="toast-title">{{ title }}</h4>
-          <p class="toast-description">{{ message }}</p>
-        </div>
-        <button @click="close" class="toast-close">
-          <span>×</span>
-        </button>
       </div>
-    </div>
-  </Transition>
+    </Transition>
 </template>
 
 <script setup>
@@ -44,29 +45,61 @@ const props = defineProps({
   autoClose: {
     type: Boolean,
     default: true
+  },
+  hasDetails: {
+    type: Boolean,
+    default: false
+  },
+  errorType: {
+    type: String,
+    default: ''
+  },
+  errorDetails: {
+    type: Array,
+    default: () => []
+  },
+  fullError: {
+    type: String,
+    default: ''
   }
 })
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close', 'show-details'])
 
 const isVisible = ref(false)
+let autoCloseTimer = null
 
 const typeClass = computed(() => ({
   [`toast-${props.type}`]: true
 }))
 
 const close = () => {
+  if (autoCloseTimer) {
+    clearTimeout(autoCloseTimer)
+    autoCloseTimer = null
+  }
   isVisible.value = false
   setTimeout(() => {
     emit('close')
   }, 300)
 }
 
+const handleClick = () => {
+  if (props.hasDetails) {
+    emit('show-details', {
+      errorType: props.errorType || props.title,
+      errorMessage: props.message,
+      errorDetails: props.errorDetails,
+      fullError: props.fullError
+    })
+  }
+}
+
 onMounted(() => {
   isVisible.value = true
   
   if (props.autoClose && props.duration > 0) {
-    setTimeout(() => {
+    autoCloseTimer = setTimeout(() => {
       close()
     }, props.duration)
   }
@@ -75,10 +108,9 @@ onMounted(() => {
 
 <style scoped>
 .notification-toast {
-  position: fixed;
-  top: 2rem;
-  right: 2rem;
-  z-index: 9999;
+  position: absolute !important;
+  right: 0 !important;
+  z-index: 9999 !important;
   max-width: 400px;
   min-width: 300px;
   border-radius: 12px;
@@ -87,6 +119,11 @@ onMounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.2);
   overflow: hidden;
   transition: all 0.3s ease;
+  margin-bottom: 1rem;
+  background: white !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
 }
 
 .toast-content {
@@ -119,6 +156,23 @@ onMounted(() => {
   margin: 0;
   line-height: 1.5;
   opacity: 0.9;
+}
+
+.toast-hint {
+  display: block;
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.notification-toast.clickable {
+  cursor: pointer;
+}
+
+.notification-toast.clickable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
 }
 
 .toast-close {

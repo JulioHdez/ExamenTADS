@@ -140,9 +140,11 @@
             id="telefono"
             v-model="formData.telefono"
             @blur="validateField('telefono', formData.telefono)"
+            @input="handleTelefonoInput"
+            @keypress="preventNonNumericTelefono"
             class="form-input"
             :class="{ 'error': errors.telefono }"
-            placeholder="(123) 456-7890"
+            placeholder="1234567890"
             maxlength="15"
           />
           <span v-if="errors.telefono" class="error-message">{{ errors.telefono }}</span>
@@ -458,9 +460,9 @@
                   <label :for="`unit-grade-${index}`" class="field-label">Calificación</label>
                   <input
                     :id="`unit-grade-${index}`"
-                    v-model="unit.grade"
+                    v-model.number="unit.grade"
                     @blur="validateGradeField(index, unit.grade)"
-                    @input="clearGradeError(index)"
+                    @input="handleGradeInput(index, $event)"
                     type="number"
                     min="0"
                     max="100"
@@ -471,6 +473,9 @@
                   />
                   <span class="grade-suffix">/ 100</span>
                   <span v-if="errors.grades[index]" class="error-message grade-error">{{ errors.grades[index] }}</span>
+                  <span v-if="unit.grade && parseFloat(unit.grade) < 70 && !errors.grades[index]" class="grade-warning">
+                    El usuario no aprobó la materia
+                  </span>
                 </div>
               </div>
             </div>
@@ -485,7 +490,7 @@
           <div v-if="formData.grades.length > 0" class="grades-summary">
             <div class="summary-item">
               <span class="summary-label">Promedio:</span>
-              <span class="summary-value">{{ calculateAverage() }}</span>
+              <span class="summary-value" :class="{ 'low-average': parseFloat(calculateAverage()) < 70 }">{{ calculateAverage() }}</span>
             </div>
             <div class="summary-item">
               <span class="summary-label">Total Unidades:</span>
@@ -716,6 +721,36 @@ const handleNameInput = (event) => {
   const fieldName = event.target.id
   formData[fieldName] = value
   clearError(fieldName)
+}
+
+const handleTelefonoInput = (event) => {
+  // Filtrar solo números
+  const value = event.target.value.replace(/[^0-9]/g, '')
+  formData.telefono = value
+  clearError('telefono')
+}
+
+const preventNonNumericTelefono = (event) => {
+  const char = String.fromCharCode(event.which)
+  if (!/[0-9]/.test(char)) {
+    event.preventDefault()
+  }
+}
+
+const handleGradeInput = (index, event) => {
+  let value = event.target.value
+  // Convertir a número
+  const numValue = parseFloat(value)
+  
+  // Si el valor es mayor a 100, limitarlo a 100
+  if (!isNaN(numValue) && numValue > 100) {
+    value = '100'
+    formData.grades[index].grade = 100
+  } else {
+    formData.grades[index].grade = value
+  }
+  
+  clearGradeError(index)
 }
 </script>
 

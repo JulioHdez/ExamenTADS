@@ -153,7 +153,36 @@ class BaseController {
         let message = 'Error en la base de datos';
         let statusCode = 500;
 
-        if (error.code === 'ER_DUP_ENTRY') {
+        // Detectar errores de SQL Server
+        const errorMessage = error.message || '';
+        
+        // Detectar errores de duplicado de número de control
+        if (errorMessage.toLowerCase().includes('número de control') || 
+            errorMessage.toLowerCase().includes('numero de control') ||
+            errorMessage.toLowerCase().includes('num_control')) {
+            message = 'Ya existe un estudiante con este número de control';
+            statusCode = 409;
+        }
+        // Detectar errores de duplicado de email (UNIQUE KEY constraint)
+        else if (errorMessage.toLowerCase().includes('duplicate key') && 
+                 (errorMessage.toLowerCase().includes('email') || errorMessage.toLowerCase().includes('@') || errorMessage.toLowerCase().includes('.com'))) {
+            message = 'Ya existe un estudiante con este correo electrónico';
+            statusCode = 409;
+        }
+        // Detectar errores de duplicado genéricos de SQL Server
+        else if (errorMessage.toLowerCase().includes('duplicate key') || errorMessage.toLowerCase().includes('violation of unique key')) {
+            // Intentar extraer qué campo está duplicado
+            if (errorMessage.toLowerCase().includes('@') || errorMessage.toLowerCase().includes('.com') || errorMessage.toLowerCase().includes('gmail')) {
+                message = 'Ya existe un estudiante con este correo electrónico';
+            } else if (errorMessage.toLowerCase().includes('control') || errorMessage.toLowerCase().includes('num_control')) {
+                message = 'Ya existe un estudiante con este número de control';
+            } else {
+                message = 'El registro ya existe';
+            }
+            statusCode = 409;
+        }
+        // Detectar errores de MySQL
+        else if (error.code === 'ER_DUP_ENTRY') {
             message = 'El registro ya existe';
             statusCode = 409;
         } else if (error.code === 'ER_NO_REFERENCED_ROW_2') {

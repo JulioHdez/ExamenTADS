@@ -15,6 +15,7 @@ declare module 'vue' {
     DashboardSidebar: typeof import('./src/components/layout/DashboardSidebar.vue')['default']
     DispersionChart: typeof import('./src/components/charts/DispersionChart.vue')['default']
     DispersionModal: typeof import('./src/components/modals/DispersionModal.vue')['default']
+    ErrorDetailModal: typeof import('./src/components/modals/ErrorDetailModal.vue')['default']
     ExportDataModal: typeof import('./src/components/modals/ExportDataModal.vue')['default']
     ExportSection: typeof import('./src/components/ui/ExportSection.vue')['default']
     FishboneDiagram: typeof import('./src/components/charts/FishboneDiagram.vue')['default']

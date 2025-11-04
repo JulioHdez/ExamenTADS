@@ -33,8 +33,16 @@ api.interceptors.response.use(
     // Manejo global de errores
     if (error.response?.status === 401) {
       // Token expirado o no válido
-      localStorage.removeItem('auth_token')
-      window.location.href = '/login'
+      // Solo redirigir si no estamos en la página de login
+      // Verificar si la URL de la petición es de login
+      const isLoginRequest = error.config?.url?.includes('/login')
+      if (!isLoginRequest) {
+        localStorage.removeItem('auth_token')
+        // Solo redirigir si no estamos ya en la página de login
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login'
+        }
+      }
     }
     return Promise.reject(error)
   }

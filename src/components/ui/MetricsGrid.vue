@@ -7,7 +7,6 @@
       </div>
       <div class="metric-value">{{ totalStudents }}</div>
       <div class="metric-subtitle">Estudiantes registrados</div>
-      <div class="metric-trend trend-up">+12%</div>
       <div class="click-hint">Click para ver lista</div>
     </div>
     
@@ -18,7 +17,6 @@
       </div>
       <div class="metric-value">{{ failureRate }}%</div>
       <div class="metric-subtitle">Porcentaje de reprobación</div>
-      <div class="metric-trend trend-down">-5%</div>
     </div>
     
     <div class="metric-card">
@@ -28,7 +26,6 @@
       </div>
       <div class="metric-value">{{ dropoutRate }}%</div>
       <div class="metric-subtitle">Estudiantes en riesgo</div>
-      <div class="metric-trend trend-down">-3%</div>
     </div>
     
     <div class="metric-card">
@@ -38,7 +35,6 @@
       </div>
       <div class="metric-value">{{ approvalRate }}%</div>
       <div class="metric-subtitle">Estudiantes aprobados</div>
-      <div class="metric-trend trend-up">+8%</div>
     </div>
   </div>
 </template>

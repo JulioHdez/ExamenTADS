@@ -197,18 +197,47 @@ const handleLogin = async () => {
       await router.push('/dashboard')
       console.log('Redirección completada')
     } else {
+      // Manejar error de credenciales incorrectas
       const errorMessage = result?.error || 'Credenciales incorrectas'
+      console.log('Login fallido:', errorMessage)
+      
       showError(
-        'Error al iniciar sesión',
-        errorMessage
+        'Credenciales incorrectas',
+        'El usuario o contraseña son incorrectos. Por favor, verifica tus datos e intenta nuevamente.'
       )
+      
+      // Limpiar los campos del formulario después de un pequeño delay para asegurar que el mensaje se muestre
+      setTimeout(() => {
+        credentials.email = ''
+        credentials.password = ''
+        errors.email = ''
+        errors.password = ''
+      }, 100)
     }
   } catch (error) {
     console.error('Error completo en login:', error)
-    showError(
-      'Error de conexión',
-      'No se pudo conectar con el servidor. Por favor, inténtalo de nuevo más tarde.'
-    )
+    
+    // Solo mostrar error si no es un error de credenciales (que ya se maneja en el else)
+    if (!error.response || error.response.status !== 401) {
+      showError(
+        'Error de conexión',
+        'No se pudo conectar con el servidor. Por favor, inténtalo de nuevo más tarde.'
+      )
+    } else {
+      // Error 401 - credenciales incorrectas
+      showError(
+        'Credenciales incorrectas',
+        'El usuario o contraseña son incorrectos. Por favor, verifica tus datos e intenta nuevamente.'
+      )
+    }
+    
+    // Limpiar los campos del formulario en caso de error
+    setTimeout(() => {
+      credentials.email = ''
+      credentials.password = ''
+      errors.email = ''
+      errors.password = ''
+    }, 100)
   } finally {
     loading.value = false
   }

@@ -96,7 +96,9 @@
                     {{ student.estatus }}
                   </span>
                 </td>
-                <td class="average">{{ student.promedio_general || 'N/A' }}</td>
+                <td class="average" :class="{ 'low-average': isLowAverage(student.promedio_general) }">
+                  {{ student.promedio_general !== null && student.promedio_general !== undefined ? student.promedio_general : 'N/A' }}
+                </td>
                 <td class="actions">
                   <button 
                     @click="deleteStudent(student)" 
@@ -250,6 +252,12 @@ export default {
       return statusClasses[status] || 'status-default'
     }
 
+    const isLowAverage = (promedio) => {
+      if (promedio === null || promedio === undefined) return false
+      const numPromedio = parseFloat(promedio)
+      return !isNaN(numPromedio) && numPromedio < 70
+    }
+
     const deleteStudent = async (student) => {
       const studentName = `${student.nombre} ${student.apellido_paterno} ${student.apellido_materno}`
       const careerName = careerMapping[student.id_carrera] || `Carrera ${student.id_carrera}`
@@ -315,6 +323,7 @@ export default {
       totalPages,
       filterStudents,
       getStatusClass,
+      isLowAverage,
       deleteStudent,
       editStudent,
       goToPage
@@ -531,6 +540,15 @@ export default {
 .average {
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.average.low-average {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.dark .average.low-average {
+  color: #fca5a5;
 }
 
 .actions {

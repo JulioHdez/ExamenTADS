@@ -611,6 +611,29 @@
   font-size: 0.7rem;
 }
 
+.grade-warning {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #dc2626;
+  font-weight: 500;
+  font-style: italic;
+  animation: fadeIn 0.3s ease;
+}
+
+.summary-value.low-average {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.dark .grade-warning {
+  color: #fca5a5;
+}
+
+.dark .summary-value.low-average {
+  color: #fca5a5;
+}
+
 .form-input.error,
 .form-select.error,
 .field-input.error {

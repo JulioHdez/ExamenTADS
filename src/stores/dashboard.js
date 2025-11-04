@@ -142,15 +142,44 @@ export const useDashboardStore = defineStore('dashboard', {
       try {
         // Usar el endpoint completo que maneja factores y calificaciones
         const response = await api.post('/estudiantes/complete', studentData)
+        
+        // Verificar si la respuesta indica éxito
+        if (response.data && response.data.success === false) {
+          console.error('Error en respuesta del servidor:', response.data)
+          return {
+            success: false,
+            error: response.data.message || 'Error al crear estudiante',
+            response: response,
+            errorDetails: response.data
+          }
+        }
+        
         const newStudent = response.data.data || response.data
         this.students.push(newStudent)
         await this.fetchStats()
         return { success: true, data: newStudent }
       } catch (error) {
         console.error('Error creating student:', error)
+        console.error('Error response:', error.response)
+        console.error('Error response status:', error.response?.status)
+        console.error('Error data:', error.response?.data)
+        
+        // Extraer mensaje del error de diferentes formas
+        // Priorizar error.response.data.message que es lo que devuelve el backend
+        const errorData = error.response?.data || {}
+        const errorMessage = errorData.message || 
+                           errorData.error || 
+                           error.message || 
+                           'Error al crear estudiante'
+        
+        console.log('Error message extraído:', errorMessage)
+        console.log('Error data completo:', errorData)
+        
         return { 
           success: false, 
-          error: error.response?.data?.message || 'Error al crear estudiante' 
+          error: errorMessage,
+          response: error.response,
+          errorDetails: errorData
         }
       }
     },
@@ -169,7 +198,9 @@ export const useDashboardStore = defineStore('dashboard', {
         console.error('Error updating student:', error)
         return { 
           success: false, 
-          error: error.response?.data?.message || 'Error al actualizar estudiante' 
+          error: error.response?.data?.message || 'Error al actualizar estudiante',
+          response: error.response,
+          errorDetails: error.response?.data
         }
       }
     },

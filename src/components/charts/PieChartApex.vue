@@ -52,6 +52,20 @@ const chartOptions = computed(() => ({
       show: true,
       tools: {
         download: true
+      },
+      export: {
+        csv: {
+          filename: 'distribucion-estado-academico',
+          columnDelimiter: ',',
+          headerCategory: 'Estado',
+          headerValue: 'Porcentaje'
+        },
+        svg: {
+          filename: 'distribucion-estado-academico'
+        },
+        png: {
+          filename: 'distribucion-estado-academico'
+        }
       }
     }
   },
@@ -82,7 +96,11 @@ const chartOptions = computed(() => ({
         const item = props.data[opts.seriesIndex]
         return item.status + ': ' + val.toFixed(1) + '% (' + item.count + ' estudiantes)'
       }
-    }
+    },
+    theme: isDarkMode.value ? 'dark' : 'light'
+  },
+  theme: {
+    mode: isDarkMode.value ? 'dark' : 'light'
   },
   responsive: [{
     breakpoint: 480,

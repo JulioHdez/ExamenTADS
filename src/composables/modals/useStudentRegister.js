@@ -7,7 +7,7 @@ import api from '@/services/api'
 export function useStudentRegister() {
   const isSubmitting = ref(false)
   const dashboardStore = useDashboardStore()
-  const { showSuccess, showError } = useNotifications()
+  const { showSuccess, showError, showErrorWithDetails } = useNotifications()
   const { fetchMateriasCompletas, getCarreraName } = useMaterias()
   
   // Estado para materias disponibles
@@ -134,7 +134,9 @@ export function useStudentRegister() {
   }
 
   const validateTelefono = (value) => {
-    if (value && !/^[\d\s\-\+\(\)]+$/.test(value)) return 'El teléfono solo puede contener números, espacios, guiones, paréntesis y el signo +'
+    if (value && !/^\d+$/.test(value)) return 'El teléfono solo puede contener números'
+    if (value && value.length < 10) return 'El teléfono debe tener al menos 10 dígitos'
+    if (value && value.length > 15) return 'El teléfono no puede tener más de 15 dígitos'
     return ''
   }
 
@@ -299,7 +301,8 @@ export function useStudentRegister() {
           formData.genero = completeStudent.genero || ''
           formData.fechaNacimiento = completeStudent.fecha_nacimiento ? completeStudent.fecha_nacimiento.split('T')[0] : ''
           formData.email = completeStudent.email || ''
-          formData.telefono = completeStudent.telefono || ''
+          // Limpiar teléfono para que solo contenga números
+          formData.telefono = completeStudent.telefono ? completeStudent.telefono.replace(/[^0-9]/g, '') : ''
           formData.direccion = completeStudent.direccion || ''
           formData.career = getCareerKey(completeStudent.id_carrera)
           formData.semester = completeStudent.semestre_actual ? completeStudent.semestre_actual.toString() : ''
@@ -348,10 +351,17 @@ export function useStudentRegister() {
           
           // Cargar calificaciones
           if (completeStudent.calificaciones && completeStudent.calificaciones.length > 0) {
-            formData.grades = completeStudent.calificaciones.map(cal => ({
-              name: cal.nombre_materia || 'Materia',
-              grade: cal.calificacion ? cal.calificacion.toString() : ''
-            }))
+            formData.grades = completeStudent.calificaciones.map(cal => {
+              // Asegurar que la calificación sea un número válido y limitarla a 100
+              const gradeValue = cal.calificacion ? parseFloat(cal.calificacion) : null
+              const finalGrade = gradeValue !== null && !isNaN(gradeValue) 
+                ? (gradeValue > 100 ? 100 : gradeValue) 
+                : ''
+              return {
+                name: cal.nombre_materia || 'Materia',
+                grade: finalGrade !== '' ? finalGrade.toString() : ''
+              }
+            })
           } else {
             formData.grades = []
           }
@@ -368,7 +378,8 @@ export function useStudentRegister() {
       formData.genero = student.genero || ''
       formData.fechaNacimiento = student.fecha_nacimiento ? student.fecha_nacimiento.split('T')[0] : ''
       formData.email = student.email || ''
-      formData.telefono = student.telefono || ''
+      // Limpiar teléfono para que solo contenga números
+      formData.telefono = student.telefono ? student.telefono.replace(/[^0-9]/g, '') : ''
       formData.direccion = student.direccion || ''
       formData.career = getCareerKey(student.id_carrera)
       formData.semester = student.semestre_actual ? student.semestre_actual.toString() : ''
@@ -400,7 +411,8 @@ export function useStudentRegister() {
       formData.genero = student.genero || ''
       formData.fechaNacimiento = student.fecha_nacimiento ? student.fecha_nacimiento.split('T')[0] : ''
       formData.email = student.email || ''
-      formData.telefono = student.telefono || ''
+      // Limpiar teléfono para que solo contenga números
+      formData.telefono = student.telefono ? student.telefono.replace(/[^0-9]/g, '') : ''
       formData.direccion = student.direccion || ''
       formData.career = getCareerKey(student.id_carrera)
       formData.semester = student.semestre_actual ? student.semestre_actual.toString() : ''
@@ -480,7 +492,26 @@ export function useStudentRegister() {
         semestre_actual: parseInt(formData.semester),
         fecha_ingreso: formData.fechaIngreso,
         estatus: formData.estatus,
-        promedio_general: calculateAverage() !== '0.0' ? parseFloat(calculateAverage()) : null,
+        promedio_general: (() => {
+          const avg = calculateAverage()
+          if (!avg || avg === '0.0' || avg === 'NaN' || avg === '') {
+            return null
+          }
+          const numValue = parseFloat(avg)
+          // Validar que sea un número válido y esté en el rango permitido (0-100)
+          if (isNaN(numValue) || !isFinite(numValue)) {
+            return null
+          }
+          // Asegurar que esté en el rango válido para Decimal(4,2): máximo 99.99
+          if (numValue < 0) {
+            return 0
+          }
+          if (numValue > 99.99) {
+            return 99.99
+          }
+          // Redondear a 2 decimales para Decimal(4,2)
+          return Math.round(numValue * 100) / 100
+        })(),
         factores_seleccionados: getSelectedFactors(),
         calificaciones: formData.grades.filter(grade => grade.name && grade.grade),
         observaciones: formData.observaciones.trim() || 'Sin observaciones',
@@ -494,13 +525,31 @@ export function useStudentRegister() {
       if (isUpdate && studentId) {
         // Actualizar estudiante existente
         console.log('Actualizando estudiante con ID:', studentId)
-        result = await api.put(`/estudiantes/${studentId}`, studentData)
+        try {
+          const response = await api.put(`/estudiantes/${studentId}`, studentData)
+          result = { success: true, data: response.data }
+        } catch (error) {
+          // Capturar error de la API
+          result = { 
+            success: false, 
+            error: error.response?.data?.message || error.message,
+            response: error.response,
+            errorDetails: error.response?.data
+          }
+        }
       } else {
         // Crear nuevo estudiante
         result = await dashboardStore.createStudent(studentData)
       }
       
-      if (result.success || result.data?.success) {
+      console.log('Resultado completo del guardado:', result)
+      console.log('Result.success:', result.success)
+      console.log('Result.data:', result.data)
+      
+      // Verificar si el resultado es exitoso
+      const isSuccess = result.success === true || (result.data && result.data.success === true)
+      
+      if (isSuccess) {
         console.log('Estudiante guardado exitosamente:', result.data || result)
         
         // Mostrar notificación de éxito
@@ -520,23 +569,135 @@ export function useStudentRegister() {
         // Cerrar modal
         emit('close')
       } else {
-        console.error('Error al guardar estudiante:', result.error || result.message)
+        console.error('Error al guardar estudiante:', result)
         
-        // Mostrar notificación de error
-        const errorMessage = isUpdate ? 'Error al actualizar estudiante' : 'Error al registrar estudiante'
-        const errorDescription = result.error || result.message || 'No se pudo guardar el estudiante. Por favor, inténtalo de nuevo.'
+        // Extraer el mensaje de error
+        let errorDescription = result.error || result.message
+        if (!errorDescription && result.errorDetails) {
+          errorDescription = result.errorDetails.message || result.errorDetails.error || 'No se pudo guardar el estudiante.'
+        }
+        if (!errorDescription && result.response?.data) {
+          errorDescription = result.response.data.message || result.response.data.error || 'Error al procesar la solicitud.'
+        }
+        if (!errorDescription) {
+          errorDescription = 'No se pudo guardar el estudiante. Por favor, inténtalo de nuevo.'
+        }
         
-        showError(errorMessage, errorDescription)
+        // Verificar si es un error de duplicado
+        const errorData = result.errorDetails || result.response?.data || {}
+        const errorMessage = errorData.message || errorDescription || ''
+        const fullErrorMessage = result.error || errorMessage // Mensaje completo del error
+        
+        // Crear una cadena completa del error para buscar patrones
+        const fullErrorString = JSON.stringify({ 
+          error: errorDescription, 
+          fullErrorMessage: fullErrorMessage,
+          ...errorData, 
+          ...result 
+        }).toLowerCase()
+        
+        console.log('Error completo para detección (else):', fullErrorString)
+        console.log('Error message (else):', errorMessage)
+        console.log('Full error message (else):', fullErrorMessage)
+        
+        // Verificar si es un error de duplicado del número de control
+        if (errorMessage.toLowerCase().includes('número de control') || 
+            errorMessage.toLowerCase().includes('numero de control') ||
+            errorMessage.toLowerCase().includes('num_control') ||
+            (errorMessage.toLowerCase().includes('ya existe') && (fullErrorString.includes('control') || fullErrorString.includes('num_control')))) {
+          // Establecer el error directamente en el campo del número de control
+          errors.controlNumber = 'Ya existe un estudiante con este número de control'
+          // Enfocar el campo del número de control
+          setTimeout(() => {
+            const controlNumberInput = document.getElementById('controlNumber')
+            if (controlNumberInput) {
+              controlNumberInput.focus()
+              controlNumberInput.select()
+            }
+          }, 100)
+        } 
+        // Verificar si es un error de duplicado del correo electrónico
+        // Buscar mensajes específicos del backend o patrones de error
+        else if (errorMessage.toLowerCase().includes('ya existe un estudiante con este correo electrónico') ||
+                 errorMessage.toLowerCase().includes('correo electrónico') && errorMessage.toLowerCase().includes('ya existe') ||
+                 fullErrorMessage.toLowerCase().includes('duplicate key') ||
+                 fullErrorString.includes('duplicate') && (fullErrorString.includes('email') || fullErrorString.includes('correo') || fullErrorString.includes('@') || fullErrorString.includes('gmail.com') || fullErrorString.includes('.com'))) {
+          // Establecer el error directamente en el campo del email
+          errors.email = 'Ya existe un estudiante con este correo electrónico'
+          // Enfocar el campo del email
+          setTimeout(() => {
+            const emailInput = document.getElementById('email')
+            if (emailInput) {
+              emailInput.focus()
+              emailInput.select()
+            }
+          }, 100)
+        } else {
+          // Para otros errores, mostrar notificación
+          const errorTitle = isUpdate ? 'Error al actualizar estudiante' : 'Error al registrar estudiante'
+          showError(errorTitle, errorDescription)
+        }
       }
       
     } catch (error) {
       console.error('Error al guardar estudiante:', error)
       
-      // Mostrar notificación de error de conexión
-      const errorMessage = isUpdate ? 'Error al actualizar estudiante' : 'Error al registrar estudiante'
+      // Extraer el mensaje de error - incluir tanto el mensaje de la respuesta como el mensaje completo del error
       const errorDescription = error.response?.data?.message || error.message || 'No se pudo conectar con el servidor. Por favor, verifica que el backend esté ejecutándose e inténtalo de nuevo.'
+      const errorData = error.response?.data || {}
+      const errorMessage = errorData.message || errorDescription
+      const fullErrorMessage = error.message || errorDescription // Mensaje completo del error que puede incluir detalles de SQL Server
       
-      showError(errorMessage, errorDescription)
+      // Crear una cadena completa del error para buscar patrones - incluir el mensaje completo del error
+      const fullErrorString = JSON.stringify({
+        error: errorDescription,
+        message: error.message,
+        fullErrorMessage: fullErrorMessage,
+        ...errorData,
+        response: error.response?.data
+      }).toLowerCase()
+      
+      console.log('Error completo para detección:', fullErrorString)
+      console.log('Error message:', errorMessage)
+      console.log('Full error message:', fullErrorMessage)
+      
+      // Verificar si es un error de duplicado del número de control
+      if (errorMessage.toLowerCase().includes('número de control') || 
+          errorMessage.toLowerCase().includes('numero de control') ||
+          errorMessage.toLowerCase().includes('num_control') ||
+          (errorMessage.toLowerCase().includes('ya existe') && (fullErrorString.includes('control') || fullErrorString.includes('num_control')))) {
+        // Establecer el error directamente en el campo del número de control
+        errors.controlNumber = 'Ya existe un estudiante con este número de control'
+        // Enfocar el campo del número de control
+        setTimeout(() => {
+          const controlNumberInput = document.getElementById('controlNumber')
+          if (controlNumberInput) {
+            controlNumberInput.focus()
+            controlNumberInput.select()
+          }
+        }, 100)
+      } 
+      // Verificar si es un error de duplicado del correo electrónico
+      // Buscar mensajes específicos del backend o patrones de error
+      else if (errorMessage.toLowerCase().includes('ya existe un estudiante con este correo electrónico') ||
+               errorMessage.toLowerCase().includes('correo electrónico') && errorMessage.toLowerCase().includes('ya existe') ||
+               fullErrorMessage.toLowerCase().includes('duplicate key') ||
+               fullErrorString.includes('duplicate') && (fullErrorString.includes('email') || fullErrorString.includes('correo') || fullErrorString.includes('@') || fullErrorString.includes('gmail.com') || fullErrorString.includes('.com'))) {
+        // Establecer el error directamente en el campo del email
+        errors.email = 'Ya existe un estudiante con este correo electrónico'
+        // Enfocar el campo del email
+        setTimeout(() => {
+          const emailInput = document.getElementById('email')
+          if (emailInput) {
+            emailInput.focus()
+            emailInput.select()
+          }
+        }, 100)
+      } else {
+        // Para otros errores (conexión, etc.), mostrar notificación
+        const errorTitle = isUpdate ? 'Error al actualizar estudiante' : 'Error al registrar estudiante'
+        showError(errorTitle, errorDescription)
+      }
     } finally {
       isSubmitting.value = false
     }

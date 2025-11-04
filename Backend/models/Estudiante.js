@@ -167,7 +167,16 @@ class Estudiante extends BaseModel {
             request.input('semestre_actual', mssql.Int, data.semestre_actual);
             request.input('fecha_ingreso', mssql.Date, data.fecha_ingreso);
             request.input('estatus', mssql.VarChar(20), data.estatus || null);
-            request.input('promedio_general', mssql.Decimal(4, 2), data.promedio_general || null);
+            // Manejar promedio_general: debe ser null si no existe, o un número válido entre 0 y 99.99
+            let promedioValue = null;
+            if (data.promedio_general !== null && data.promedio_general !== undefined && data.promedio_general !== '') {
+                const numValue = typeof data.promedio_general === 'string' ? parseFloat(data.promedio_general) : data.promedio_general;
+                if (!isNaN(numValue) && isFinite(numValue)) {
+                    // Asegurar que esté en el rango válido para Decimal(4,2): 0 a 99.99
+                    promedioValue = Math.max(0, Math.min(99.99, Math.round(numValue * 100) / 100));
+                }
+            }
+            request.input('promedio_general', mssql.Decimal(4, 2), promedioValue);
             
             const query = `
                 INSERT INTO ${this.tableName} (

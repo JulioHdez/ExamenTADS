@@ -43,7 +43,24 @@ export function useNotifications() {
       type: 'error',
       title,
       message,
+      duration: 10000, // 10 segundos para errores
       ...options
+    })
+  }
+  
+  // Método para mostrar errores con detalles del backend
+  const showErrorWithDetails = (title, message, errorDetails = {}) => {
+    return addNotification({
+      type: 'error',
+      title,
+      message,
+      duration: 10000, // 10 segundos
+      autoClose: true,
+      hasDetails: true,
+      errorType: errorDetails.errorType || title,
+      errorDetails: errorDetails.errors || [],
+      fullError: errorDetails.fullError || errorDetails.error || '',
+      ...errorDetails
     })
   }
 
@@ -80,6 +97,7 @@ export function useNotifications() {
     removeNotification,
     clearAll,
     showError,
+    showErrorWithDetails,
     showSuccess,
     showWarning,
     showInfo
