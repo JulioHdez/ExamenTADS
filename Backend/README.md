@@ -6,22 +6,31 @@ Backend del Sistema de Gestión Académica para el Instituto Tecnológico de Tij
 ## Características
 - ✅ API REST completa
 - ✅ Base de datos SQL Server
-- ✅ Autenticación JWT
-- ✅ Validación de datos
-- ✅ Manejo de errores
-- ✅ Documentación automática
+- ✅ Autenticación JWT para docentes
+- ✅ Validación de datos con Express Validator
+- ✅ Manejo de errores centralizado
+- ✅ Importación masiva de datos (Excel/CSV)
+- ✅ Exportación de datos en múltiples formatos
+- ✅ Análisis de Pareto para reportes académicos
 - ✅ CORS configurado
-- ✅ Logging y monitoreo
+- ✅ Logging y monitoreo con Morgan
+- ✅ Compresión de respuestas
+- ✅ Seguridad con Helmet
 
 ## Tecnologías Utilizadas
 - **Node.js** - Runtime de JavaScript
 - **Express.js** - Framework web
-- **SQL Server** - Base de datos
-- **JWT** - Autenticación
+- **SQL Server** - Base de datos relacional
+- **JWT (jsonwebtoken)** - Autenticación basada en tokens
+- **bcryptjs** - Cifrado de contraseñas
 - **Express Validator** - Validación de datos
-- **Helmet** - Seguridad
+- **Helmet** - Seguridad HTTP
 - **CORS** - Cross-Origin Resource Sharing
-- **Morgan** - Logging
+- **Morgan** - Logging de peticiones HTTP
+- **Multer** - Manejo de carga de archivos
+- **ExcelJS** - Procesamiento de archivos Excel
+- **csv-parse** - Procesamiento de archivos CSV
+- **Compression** - Compresión de respuestas HTTP
 
 ## Estructura del Proyecto
 ```
@@ -36,7 +45,11 @@ Backend/
 │   ├── MateriaController.js # Controlador de materias
 │   ├── GrupoController.js   # Controlador de grupos
 │   ├── CalificacionParcialController.js # Controlador de calificaciones
-│   └── FactorController.js  # Controlador de factores
+│   ├── FactorController.js  # Controlador de factores
+│   ├── ParetoController.js  # Controlador de análisis Pareto
+│   ├── ExportController.js  # Controlador de exportación
+│   ├── ImportController.js  # Controlador de importación
+│   └── MockController.js    # Controlador de datos mock
 ├── middleware/
 │   ├── auth.js              # Middleware de autenticación
 │   ├── validation.js        # Middleware de validación
@@ -55,13 +68,25 @@ Backend/
 │   ├── index.js             # Rutas principales
 │   ├── carreras.js          # Rutas de carreras
 │   ├── estudiantes.js       # Rutas de estudiantes
-│   ├── docentes.js          # Rutas de docentes
+│   ├── docentes.js          # Rutas de docentes y autenticación
 │   ├── materias.js          # Rutas de materias
 │   ├── grupos.js            # Rutas de grupos
 │   ├── calificaciones.js    # Rutas de calificaciones
-│   └── factores.js          # Rutas de factores
+│   ├── factores.js          # Rutas de factores
+│   ├── pareto.js            # Rutas de análisis Pareto
+│   ├── export.js            # Rutas de exportación
+│   └── import.js            # Rutas de importación
+├── scripts/                 # Scripts de utilidad
+│   ├── configure-db.js     # Configuración de base de datos
+│   ├── generate-random-students.js # Generación de estudiantes
+│   ├── install.js          # Script de instalación
+│   └── ...                 # Otros scripts
+├── uploads/                 # Directorio de archivos subidos
+├── docs/                    # Documentación adicional
+│   └── auth-endpoints.md   # Documentación de autenticación
 ├── package.json             # Dependencias del proyecto
-├── server.js               # Archivo principal del servidor
+├── server.js               # Archivo principal del servidor (producción)
+├── server-dev.js           # Servidor de desarrollo con datos mock
 └── README.md               # Este archivo
 ```
 
@@ -102,7 +127,7 @@ Backend/
    DB_TRUST_SERVER_CERTIFICATE=true
 
    # Configuración del Servidor
-   PORT=3000
+   PORT=3001
    NODE_ENV=development
 
    # JWT Secret
@@ -148,12 +173,16 @@ Backend/
 - `POST /api/estudiantes` - Crear nuevo estudiante
 - `PUT /api/estudiantes/:id` - Actualizar estudiante
 
-#### Docentes
+#### Docentes y Autenticación
 - `GET /api/docentes` - Obtener todos los docentes
 - `GET /api/docentes/active` - Obtener docentes activos
 - `GET /api/docentes/:id/grupos` - Grupos del docente
 - `GET /api/docentes/:id/calificaciones` - Calificaciones registradas
 - `POST /api/docentes` - Crear nuevo docente
+- `POST /api/docentes/with-password` - Crear docente con contraseña
+- `POST /api/docentes/login/email` - Login por email
+- `POST /api/docentes/login/num-empleado` - Login por número de empleado
+- `PUT /api/docentes/:id/password` - Actualizar contraseña
 
 #### Materias
 - `GET /api/materias` - Obtener todas las materias
@@ -180,11 +209,27 @@ Backend/
 - `GET /api/factores/tipos` - Tipos de factores disponibles
 - `POST /api/factores` - Crear nuevo factor
 
+#### Análisis de Pareto
+- `GET /api/pareto/excel-report` - Generar reporte Excel de análisis Pareto
+
+#### Exportación de Datos
+- `POST /api/export` - Exportar datos en formato personalizado
+- `GET /api/export/download-csv/:dataType` - Descargar CSV directo
+
+#### Importación de Datos
+- `POST /api/import` - Importar datos desde archivo Excel/CSV
+- `GET /api/import/template/excel` - Descargar plantilla Excel
+- `GET /api/import/template/csv` - Descargar plantilla CSV
+
+#### Sistema
+- `GET /api/health` - Estado de salud del API
+- `GET /api/info` - Información del API y endpoints disponibles
+
 ### Ejemplos de Uso
 
 #### Crear un estudiante
 ```bash
-curl -X POST http://localhost:3000/api/estudiantes \
+curl -X POST http://localhost:3001/api/estudiantes \
   -H "Content-Type: application/json" \
   -d '{
     "num_control": "2024001",
@@ -202,13 +247,24 @@ curl -X POST http://localhost:3000/api/estudiantes \
 
 #### Obtener estudiantes activos
 ```bash
-curl http://localhost:3000/api/estudiantes/active
+curl http://localhost:3001/api/estudiantes/active
+```
+
+#### Login de docente
+```bash
+curl -X POST http://localhost:3001/api/docentes/login/email \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "docente@tec.com",
+    "password": "Tasd123!"
+  }'
 ```
 
 #### Crear una calificación
 ```bash
-curl -X POST http://localhost:3000/api/calificaciones \
+curl -X POST http://localhost:3001/api/calificaciones \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -d '{
     "id_grupo": 1,
     "num_unidad": 1,
@@ -219,17 +275,53 @@ curl -X POST http://localhost:3000/api/calificaciones \
   }'
 ```
 
+#### Importar estudiantes desde archivo
+```bash
+curl -X POST http://localhost:3001/api/import \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -F "file=@estudiantes.xlsx"
+```
+
+#### Exportar datos
+```bash
+curl -X POST http://localhost:3001/api/export \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "dataType": "estudiantes",
+    "format": "excel"
+  }'
+```
+
 ## Scripts Disponibles
 
 ```bash
 # Iniciar en modo desarrollo
 npm run dev
 
+# Iniciar servidor con datos mock (desarrollo)
+npm run dev-mock
+
 # Iniciar en modo producción
 npm start
 
 # Ejecutar pruebas
 npm test
+
+# Configuración y diagnóstico
+npm run setup              # Instalación completa y configuración
+npm run install-setup      # Instalar dependencias y configurar
+npm run configure-db       # Configurar base de datos
+npm run diagnose           # Diagnosticar conexión a BD
+npm run test-db            # Probar conexión a base de datos
+npm run update-db          # Actualizar estructura de base de datos
+
+# Generación de datos de prueba
+npm run generate-students        # Generar 200 estudiantes aleatorios
+npm run generate-students:50     # Generar 50 estudiantes
+npm run generate-students:100    # Generar 100 estudiantes
+npm run generate-students:500    # Generar 500 estudiantes
+npm run generate-students:clean  # Generar limpiando datos anteriores
 ```
 
 ## Configuración de Base de Datos
@@ -252,9 +344,12 @@ El sistema utiliza las siguientes tablas principales:
 ## Seguridad
 
 ### Autenticación
-- JWT (JSON Web Tokens)
-- Tokens con expiración configurable
+- JWT (JSON Web Tokens) para autenticación de docentes
+- Login por email o número de empleado
+- Contraseñas cifradas con bcryptjs
+- Tokens con expiración configurable (por defecto 24h)
 - Middleware de autenticación en rutas protegidas
+- Endpoints de autenticación documentados en `/docs/auth-endpoints.md`
 
 ### Validación
 - Validación de datos de entrada
@@ -263,8 +358,16 @@ El sistema utiliza las siguientes tablas principales:
 
 ### CORS
 - Configuración de orígenes permitidos
-- Headers de seguridad
+- Headers de seguridad con Helmet
 - Credenciales controladas
+- Soporte para desarrollo frontend (puerto 5173)
+
+### Importación y Exportación
+- Importación masiva de estudiantes desde Excel/CSV
+- Validación de datos durante importación
+- Plantillas descargables para importación
+- Exportación en múltiples formatos (Excel, CSV, PDF)
+- Procesamiento asíncrono de archivos grandes
 
 ## Monitoreo y Logging
 
@@ -274,9 +377,10 @@ El sistema utiliza las siguientes tablas principales:
 - Timestamps en todos los logs
 
 ### Health Checks
-- Endpoint `/api/health` para verificar estado
+- Endpoint `/api/health` para verificar estado del servidor
+- Endpoint `/api/info` para información del API
 - Verificación de conexión a base de datos
-- Información del sistema
+- Información del sistema y versiones
 
 ## Desarrollo
 

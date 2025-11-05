@@ -12,9 +12,18 @@ Un sistema completo de dashboard para análisis de datos estudiantiles construid
 - **VueUse** - Colección de utilidades para Vue
 - **Chart.js** - Librería de gráficos interactivos
 - **Vue Chart.js** - Integración de Chart.js con Vue
+- **ApexCharts** - Gráficos avanzados y responsivos
+- **Vue3-ApexCharts** - Integración de ApexCharts con Vue 3
+- **ExcelJS** - Generación y lectura de archivos Excel
+- **jsPDF** - Generación de documentos PDF
+- **html2canvas** - Captura de pantalla para exportación
+- **file-saver** - Descarga de archivos en el cliente
 - **Heroicons** - Iconografía moderna
-- **CSS3** - Estilos modernos con Grid y Flexbox
+- **CSS3/Sass** - Estilos modernos con Grid y Flexbox
 - **ESLint & Prettier** - Linting y formateo de código
+- **Syncfusion Diagrams** - Diagramas y visualizaciones avanzadas
+- **JointJS** - Diagramas interactivos
+- **Mermaid** - Generación de diagramas desde texto
 
 ## 📦 Instalación
 
@@ -105,11 +114,12 @@ src/
 ## 🎯 Funcionalidades del Sistema
 
 ### 🔐 Sistema de Autenticación
-- **Login Seguro**: Autenticación con validación de credenciales
+- **Login Seguro**: Autenticación JWT con validación de credenciales
 - **Guards de Rutas**: Protección automática de rutas sensibles
-- **Gestión de Sesión**: Manejo de tokens y estado de autenticación
-- **Credenciales Demo**: Usuario: `mguerrero@tec.com` / Contraseña: `Tasd123!`
-- **Otra opción**: Usuario: `docente@tec.com` / Contraseña: `Tasd123!`
+- **Gestión de Sesión**: Manejo de tokens JWT y estado de autenticación
+- **Persistencia**: Tokens almacenados en localStorage
+- **Credenciales Demo**: 
+  - Usuario: `mguerrero@tec.com` / Contraseña: `password123`
 
 ### 📊 Dashboard Principal
 - **Métricas en Tiempo Real**: Total de estudiantes, tasas de aprobación/reprobación
@@ -130,10 +140,18 @@ src/
 - **Reportes Detallados**: Análisis individual y grupal
 
 ### 📤 Exportación de Datos
-- **Múltiples Formatos**: Excel, CSV, PDF
+- **Múltiples Formatos**: Excel (.xlsx), CSV, PDF
 - **Filtros Personalizables**: Selección de datos específicos
-- **Reportes Programados**: Exportación automática periódica
+- **Exportación de Gráficos**: Captura de visualizaciones como imágenes
 - **Plantillas Predefinidas**: Formatos estándar para diferentes usos
+- **Descarga Directa**: Generación y descarga de archivos en el cliente
+
+### 📥 Importación de Datos
+- **Importación Masiva**: Carga de estudiantes desde archivos Excel/CSV
+- **Validación de Datos**: Verificación en tiempo real durante importación
+- **Plantillas Descargables**: Plantillas Excel y CSV disponibles
+- **Manejo de Errores**: Reporte detallado de errores de importación
+- **Procesamiento Asíncrono**: Soporte para archivos grandes
 
 ### 🌙 Modo Oscuro/Claro
 - **Toggle Intuitivo**: Cambio fácil entre temas
@@ -252,9 +270,12 @@ src/
 ## 🚀 Instrucciones de Uso
 
 ### 1. Inicio de Sesión
-- **Credenciales demo**: `luisleal2.123654@gmail.com` / `admin123`
+- **Credenciales demo**: 
+  - `mguerrero@tec.com` / `Tasd123!`
+  - `docente@tec.com` / `Tasd123!`
 - **Validación en tiempo real**: Verificación de formato de email
 - **Redirección automática**: Al dashboard tras login exitoso
+- **Persistencia de sesión**: Tokens JWT almacenados en localStorage
 
 ### 2. Navegación del Dashboard
 - **Sidebar expandible**: Hover para expandir automáticamente
@@ -268,14 +289,21 @@ src/
 
 ### 4. Análisis y Exportación
 - **Factores de riesgo**: Identificación automática de estudiantes en riesgo
-- **Exportación de datos**: Múltiples formatos disponibles
+- **Exportación de datos**: Múltiples formatos disponibles (Excel, CSV, PDF)
 - **Filtros personalizables**: Selección específica de datos
+- **Análisis de Pareto**: Generación de reportes de análisis Pareto
+
+### 5. Importación de Datos
+- **Descargar plantilla**: Acceder a plantillas Excel/CSV desde el sistema
+- **Cargar archivo**: Seleccionar archivo con datos de estudiantes
+- **Validación**: El sistema valida automáticamente los datos
+- **Confirmación**: Revisar resultados de importación antes de confirmar
 
 ## 🧪 Desarrollo
 
 ### Comandos Disponibles
 ```bash
-# Desarrollo con hot reload
+# Desarrollo con hot reload (puerto 5173)
 npm run dev
 
 # Linting del código
@@ -287,9 +315,14 @@ npm run format
 # Build de producción
 npm run build
 
-# Preview del build
+# Preview del build de producción
 npm run preview
 ```
+
+### Requisitos del Backend
+- El backend debe estar ejecutándose en `http://localhost:3001`
+- El backend debe tener CORS configurado para permitir el origen del frontend
+- Se requiere autenticación JWT para la mayoría de endpoints
 
 ### Configuración del Proyecto
 - **Vite**: Herramienta de construcción moderna
@@ -300,13 +333,16 @@ npm run preview
 ## 🔧 Configuración para Backend
 
 ### Proxy de Desarrollo
-- Las peticiones a `/api` se redirigen al backend en puerto 8000
+- Las peticiones a `/api` se redirigen al backend en puerto 3001
 - Configurado en `vite.config.js`
+- Cambio automático de origen para desarrollo
 
 ### Servicios HTTP
 - Axios configurado con interceptores
-- Manejo global de errores
-- Base URL configurada para el proxy
+- Manejo global de errores (401, 403, 500, etc.)
+- Inyección automática de tokens JWT en headers
+- Redirección automática a login en caso de token expirado
+- Base URL configurada para el proxy de desarrollo
 
 ## 🤝 Contribución
 
