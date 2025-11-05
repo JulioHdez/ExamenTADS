@@ -1,6 +1,7 @@
 <template>
   <div class="apex-chart-wrapper">
     <apexchart
+      ref="chartRef"
       type="line"
       :options="chartOptions"
       :series="series"
@@ -10,7 +11,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch, nextTick } from 'vue'
 
 const props = defineProps({
   data: {
@@ -27,9 +28,63 @@ const props = defineProps({
   }
 })
 
-const isDarkMode = ref(false)
+const emit = defineEmits(['dataPointSelection'])
 
-// Detectar el modo oscuro
+const isDarkMode = ref(false)
+const chartRef = ref(null)
+
+// Función para agregar listeners de clic a los marcadores
+const setupMarkerListeners = () => {
+  if (chartRef.value && chartRef.value.chart) {
+    const chart = chartRef.value.chart
+    const chartContainer = chart.w.globals.dom.baseEl
+    
+    if (chartContainer) {
+      const svgElement = chartContainer.querySelector('svg')
+      if (svgElement) {
+        // Agregar listener para clics en marcadores
+        const handleMarkerClick = (event) => {
+          const target = event.target
+          // Verificar si es un círculo que es parte de un marcador
+          if (target && target.tagName === 'circle') {
+            const markerGroup = target.closest('.apexcharts-series-markers')
+            if (markerGroup) {
+              const allMarkers = markerGroup.querySelectorAll('g')
+              let markerIndex = -1
+              
+              // Buscar el índice del marcador
+              allMarkers.forEach((marker, index) => {
+                const circle = marker.querySelector('circle')
+                if (circle === target || marker.contains(target)) {
+                  markerIndex = index
+                }
+              })
+              
+              if (markerIndex !== -1 && props.data[markerIndex]) {
+                const selectedData = props.data[markerIndex]
+                const selectedLabel = props.labels[markerIndex]
+                
+                emit('dataPointSelection', {
+                  chartType: 'line',
+                  category: selectedLabel,
+                  value: selectedData.rate,
+                  month: selectedData.month,
+                  dataPointIndex: markerIndex
+                })
+              }
+            }
+          }
+        }
+        
+        // Remover listener anterior si existe
+        svgElement.removeEventListener('click', handleMarkerClick)
+        svgElement.addEventListener('click', handleMarkerClick)
+      }
+    }
+  }
+}
+
+// Detectar el modo oscuro y configurar eventos del gráfico
 onMounted(() => {
   isDarkMode.value = document.documentElement.classList.contains('dark')
   
@@ -69,6 +124,45 @@ const chartOptions = computed(() => ({
     },
     zoom: {
       enabled: true
+    },
+    events: {
+      dataPointSelection: (event, chartContext, config) => {
+        const dataPointIndex = config.dataPointIndex
+        const selectedData = props.data[dataPointIndex]
+        const selectedLabel = props.labels[dataPointIndex]
+        
+        if (selectedData) {
+          emit('dataPointSelection', {
+            chartType: 'line',
+            category: selectedLabel,
+            value: selectedData.rate,
+            month: selectedData.month,
+            dataPointIndex
+          })
+        }
+      },
+      click: (event, chartContext, config) => {
+        // Verificar si el click es en un punto de datos
+        if (config && config.dataPointIndex !== undefined && config.dataPointIndex !== null) {
+          const dataPointIndex = config.dataPointIndex
+          const selectedData = props.data[dataPointIndex]
+          const selectedLabel = props.labels[dataPointIndex]
+          
+          if (selectedData) {
+            emit('dataPointSelection', {
+              chartType: 'line',
+              category: selectedLabel,
+              value: selectedData.rate,
+              month: selectedData.month,
+              dataPointIndex
+            })
+          }
+        }
+      },
+      rendered: () => {
+        // Cuando el gráfico se renderiza, configurar listeners adicionales
+        setupMarkerListeners()
+      }
     }
   },
   stroke: {
@@ -76,10 +170,11 @@ const chartOptions = computed(() => ({
     width: 3
   },
   markers: {
-    size: 5,
+    size: 7,
     hover: {
-      size: 7
-    }
+      size: 9
+    },
+    discrete: []
   },
   xaxis: {
     categories: props.labels,

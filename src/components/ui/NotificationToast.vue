@@ -1,6 +1,6 @@
 <template>
   <Transition name="toast">
-      <div v-if="isVisible" class="notification-toast" :class="typeClass" :class="{ 'clickable': hasDetails }" @click="handleClick">
+      <div v-if="isVisible" class="notification-toast" :class="[typeClass, { 'clickable': hasDetails }]" @click="handleClick">
         <div class="toast-content">
           <div class="toast-icon">
             <span v-if="type === 'error'">⚠️</span>

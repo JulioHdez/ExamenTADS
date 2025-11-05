@@ -19,6 +19,7 @@
             :data="barChartData"
             :labels="periodLabels"
             title="Distribución por Semestre"
+            @dataPointSelection="handleChartSelection"
           />
         </div>
       </div>
@@ -38,6 +39,7 @@
           <PieChartApex 
             :data="pieChartDataFiltered"
             title="Distribución por Estado Académico"
+            @dataPointSelection="handleChartSelection"
           />
         </div>
       </div>
@@ -58,10 +60,18 @@
             :data="lineChartDataFiltered"
             :labels="lineChartLabelsFiltered"
             title="Tendencia de Rendimiento"
+            @dataPointSelection="handleChartSelection"
           />
         </div>
       </div>
     </div>
+
+    <!-- Modal de detalles del gráfico -->
+    <ChartDetailModal 
+      :is-open="showChartModal"
+      :selected-chart-info="selectedChartInfo"
+      @close="closeChartModal"
+    />
   </div>
 </template>
 
@@ -71,10 +81,27 @@ import { useDashboardData } from '@/composables/useDashboardData'
 import BarChartApex from './BarChartApex.vue'
 import PieChartApex from './PieChartApex.vue'
 import LineChartApex from './LineChartApex.vue'
+import ChartDetailModal from '@/components/modals/ChartDetailModal.vue'
 
 const {
   filteredStudents
 } = useDashboardData()
+
+// Estado del modal
+const showChartModal = ref(false)
+const selectedChartInfo = ref(null)
+
+// Manejar selección de gráfico
+const handleChartSelection = (chartInfo) => {
+  selectedChartInfo.value = chartInfo
+  showChartModal.value = true
+}
+
+// Cerrar modal
+const closeChartModal = () => {
+  showChartModal.value = false
+  selectedChartInfo.value = null
+}
 
 // Variables reactivas para los selectores
 const barChartSemester = ref('')

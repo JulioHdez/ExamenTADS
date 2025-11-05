@@ -1,10 +1,12 @@
 <template>
   <div class="apex-chart-wrapper">
     <apexchart
+      ref="chartRef"
       type="bar"
       :options="chartOptions"
       :series="series"
       height="350"
+      @dataPointSelection="handleDataPointSelection"
     ></apexchart>
   </div>
 </template>
@@ -27,7 +29,10 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['dataPointSelection'])
+
 const isDarkMode = ref(false)
+const chartRef = ref(null)
 
 // Detectar el modo oscuro
 onMounted(() => {
@@ -65,6 +70,20 @@ const chartOptions = computed(() => ({
         zoomout: true,
         pan: false,
         reset: true
+      }
+    },
+    events: {
+      dataPointSelection: (event, chartContext, config) => {
+        const dataPointIndex = config.dataPointIndex
+        const selectedData = props.data[dataPointIndex]
+        const selectedLabel = props.labels[dataPointIndex]
+        
+        emit('dataPointSelection', {
+          chartType: 'bar',
+          category: selectedLabel,
+          value: selectedData,
+          dataPointIndex
+        })
       }
     }
   },

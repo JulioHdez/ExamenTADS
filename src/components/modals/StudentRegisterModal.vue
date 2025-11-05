@@ -124,6 +124,7 @@
             id="email"
             v-model="formData.email"
             @blur="validateField('email', formData.email)"
+            @input="clearError('email')"
             class="form-input"
             :class="{ 'error': errors.email }"
             placeholder="ejemplo@correo.com"
@@ -341,13 +342,20 @@
           <div class="form-row">
             <div class="form-group">
               <label :for="`clave_grupo_${index}`" class="form-label">Clave del Grupo</label>
-              <input
+              <select
                 :id="`clave_grupo_${index}`"
                 v-model="grupo.clave_grupo"
-                type="text"
-                class="form-input"
-                placeholder="Ej: GRP001"
-              />
+                class="form-select"
+              >
+                <option value="">-- Seleccione una clave --</option>
+                <option 
+                  v-for="clave in opcionesClaveGrupo" 
+                  :key="clave"
+                  :value="clave"
+                >
+                  {{ clave }}
+                </option>
+              </select>
             </div>
             
             <div class="form-group">
@@ -391,23 +399,31 @@
           <div class="form-row">
             <div class="form-group">
               <label :for="`horario_${index}`" class="form-label">Horario</label>
-              <input
+              <select
                 :id="`horario_${index}`"
                 v-model="grupo.horario"
-                type="text"
-                class="form-input"
-                placeholder="Ej: Lunes 8:00-10:00"
-              />
+                class="form-select"
+              >
+                <option value="">-- Seleccione un horario --</option>
+                <option 
+                  v-for="horario in obtenerHorariosParaMateria(index, grupo.id_materia)" 
+                  :key="horario"
+                  :value="horario"
+                >
+                  {{ horario }}
+                </option>
+              </select>
             </div>
             
             <div class="form-group">
               <label :for="`aula_${index}`" class="form-label">Aula</label>
               <input
                 :id="`aula_${index}`"
-                v-model="grupo.aula"
+                :value="grupo.aula || ''"
                 type="text"
-                class="form-input"
-                placeholder="Ej: A-101"
+                class="form-input readonly-field"
+                readonly
+                placeholder="Se asignará automáticamente"
               />
             </div>
           </div>
@@ -640,7 +656,10 @@ const {
   materiasDisponibles,
   materiasCargando,
   cargarMateriasPorCarrera,
-  seleccionarMateria
+  seleccionarMateria,
+  // Nuevas funciones para grupos
+  opcionesClaveGrupo,
+  obtenerHorariosParaMateria
 } = useStudentRegister()
 
 // Watcher para cargar datos del estudiante cuando se está editando

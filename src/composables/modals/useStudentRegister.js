@@ -13,6 +13,45 @@ export function useStudentRegister() {
   // Estado para materias disponibles
   const materiasDisponibles = ref([])
   const materiasCargando = ref(false)
+  
+  // Opciones predefinidas para claves de grupo
+  const opcionesClaveGrupo = ref([
+    'GRP001', 'GRP002', 'GRP003', 'GRP004', 'GRP005',
+    'GRP006', 'GRP007', 'GRP008', 'GRP009', 'GRP010'
+  ])
+  
+  // Horarios predefinidos (pool de horarios disponibles)
+  const horariosPredefinidos = ref([
+    'Lunes y Miércoles 8:00-10:00',
+    'Lunes y Miércoles 10:00-12:00',
+    'Lunes y Miércoles 14:00-16:00',
+    'Lunes y Miércoles 16:00-18:00',
+    'Martes y Jueves 8:00-10:00',
+    'Martes y Jueves 10:00-12:00',
+    'Martes y Jueves 14:00-16:00',
+    'Martes y Jueves 16:00-18:00',
+    'Miércoles y Viernes 8:00-10:00',
+    'Miércoles y Viernes 10:00-12:00',
+    'Miércoles y Viernes 14:00-16:00',
+    'Miércoles y Viernes 16:00-18:00',
+    'Lunes, Miércoles y Viernes 8:00-9:00',
+    'Lunes, Miércoles y Viernes 9:00-10:00',
+    'Lunes, Miércoles y Viernes 10:00-11:00',
+    'Lunes, Miércoles y Viernes 11:00-12:00'
+  ])
+  
+  // Cache de horarios asignados por id_materia para mantener consistencia dentro de la misma sesión
+  const horariosPorMateria = ref(new Map())
+  
+  // Aulas disponibles
+  const aulasLaboratorio = ref(['91L1', '91L2', '91L3', '91L4', '91L5', '91L6', '91L7', '91L8', '91L9', '91L10'])
+  const aulasNormales = ref(['201', '202', '301', '302', '401', '402', '501', '502', '601', '602'])
+  
+  // Cache de aulas asignadas por id_materia (similar a horarios)
+  const aulasPorMateria = ref(new Map())
+  
+  // Aulas ya asignadas en uso (para evitar repeticiones entre grupos activos)
+  const aulasAsignadas = ref(new Set())
 
   const formData = reactive({
     controlNumber: '',
@@ -310,6 +349,12 @@ export function useStudentRegister() {
           formData.estatus = completeStudent.estatus || 'Activo'
           formData.observaciones = completeStudent.factores?.[0]?.observaciones || ''
           
+          // Cargar materias de la carrera para poder completar datos de grupos
+          const carreraId = getCareerId(formData.career)
+          if (carreraId) {
+            await cargarMateriasPorCarrera(carreraId)
+          }
+          
           // Cargar factores
           if (completeStudent.factores && completeStudent.factores.length > 0) {
             const factorNames = completeStudent.factores.map(f => f.nombre_factor)
@@ -325,21 +370,69 @@ export function useStudentRegister() {
             }
           }
           
+          // Limpiar aulas asignadas antes de cargar
+          aulasAsignadas.value.clear()
+          aulasPorMateria.value.clear()
+          
           // Cargar grupos
           if (completeStudent.grupos && completeStudent.grupos.length > 0) {
-            formData.grupos = completeStudent.grupos.map(grupo => ({
-              id_materia: grupo.id_materia,
-              clave_grupo: grupo.clave_grupo,
-              semestre: grupo.semestre,
-              anio: grupo.anio,
-              periodo: grupo.periodo,
-              horario: grupo.horario || '',
-              aula: grupo.aula || ''
-            }))
+            formData.grupos = completeStudent.grupos.map((grupo, index) => {
+              // Buscar la materia completa en las materias disponibles
+              const materiaCompleta = materiasDisponibles.value.find(m => m.id_materia === grupo.id_materia)
+              
+              // Si hay materia, generar horarios para ella
+              let horarioActual = grupo.horario || ''
+              if (grupo.id_materia && materiaCompleta) {
+                const horarios = obtenerHorariosParaMateria(index, grupo.id_materia)
+                // Si no hay horario guardado, usar el primero disponible
+                if (!horarioActual) {
+                  horarioActual = horarios[0] || ''
+                }
+              }
+              
+              // Procesar aula - si existe, usarla; si no, generar una nueva
+              let aulaActual = grupo.aula || ''
+              if (grupo.id_materia && materiaCompleta) {
+                if (!aulaActual) {
+                  // Generar nueva aula para esta materia
+                  const grupoTemp = {
+                    id_materia: grupo.id_materia,
+                    nombre_materia: materiaCompleta.nombre_materia,
+                    clave_materia: materiaCompleta.clave_materia,
+                    horas_practica: materiaCompleta.horas_practica
+                  }
+                  aulaActual = obtenerAulaParaMateria(grupo.id_materia, grupoTemp)
+                } else {
+                  // Marcar aula existente como asignada
+                  aulasAsignadas.value.add(aulaActual)
+                  aulasPorMateria.value.set(grupo.id_materia, aulaActual)
+                }
+              }
+              
+              return {
+                id_materia: grupo.id_materia || null,
+                nombre_materia: materiaCompleta?.nombre_materia || grupo.nombre_materia || '',
+                clave_materia: materiaCompleta?.clave_materia || grupo.clave_materia || '',
+                creditos: materiaCompleta?.creditos || grupo.creditos || null,
+                horas_teoria: materiaCompleta?.horas_teoria || grupo.horas_teoria || null,
+                horas_practica: materiaCompleta?.horas_practica || grupo.horas_practica || null,
+                clave_grupo: grupo.clave_grupo || `GRP${String(index + 1).padStart(3, '0')}`,
+                semestre: grupo.semestre || '1',
+                anio: grupo.anio || new Date().getFullYear(),
+                periodo: grupo.periodo || '1',
+                horario: horarioActual,
+                aula: aulaActual
+              }
+            })
           } else {
             // Si no hay grupos, mantener uno por defecto
             formData.grupos = [{
-              id_materia: 1,
+              id_materia: null,
+              nombre_materia: '',
+              clave_materia: '',
+              creditos: null,
+              horas_teoria: null,
+              horas_practica: null,
               clave_grupo: 'GRP001',
               semestre: '1',
               anio: new Date().getFullYear(),
@@ -600,36 +693,41 @@ export function useStudentRegister() {
         console.log('Error message (else):', errorMessage)
         console.log('Full error message (else):', fullErrorMessage)
         
-        // Verificar si es un error de duplicado del número de control
-        if (errorMessage.toLowerCase().includes('número de control') || 
-            errorMessage.toLowerCase().includes('numero de control') ||
-            errorMessage.toLowerCase().includes('num_control') ||
-            (errorMessage.toLowerCase().includes('ya existe') && (fullErrorString.includes('control') || fullErrorString.includes('num_control')))) {
+        // Verificar EXACTAMENTE qué campo está duplicado basándose en el mensaje del backend
+        const lowerErrorMessage = errorMessage.toLowerCase()
+        const lowerFullErrorString = fullErrorString.toLowerCase()
+        
+        // Verificar si es error de CORREO ELECTRÓNICO (mensaje exacto del backend)
+        if (lowerErrorMessage.includes('ya existe un estudiante con este correo electrónico') ||
+            (lowerErrorMessage.includes('correo electrónico') && lowerErrorMessage.includes('ya existe') && !lowerErrorMessage.includes('número de control'))) {
+          // Establecer el error directamente en el campo del email
+          errors.email = 'Ya existe un estudiante con este correo electrónico'
+          // Limpiar cualquier error previo del número de control
+          errors.controlNumber = ''
+          // Enfocar el campo del email y hacer scroll hacia él
+          setTimeout(() => {
+            const emailInput = document.getElementById('email')
+            if (emailInput) {
+              emailInput.focus()
+              emailInput.select()
+              emailInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            }
+          }, 100)
+        } 
+        // Verificar si es error de NÚMERO DE CONTROL (mensaje exacto del backend)
+        else if (lowerErrorMessage.includes('ya existe un estudiante con este número de control') ||
+                 (lowerErrorMessage.includes('número de control') && lowerErrorMessage.includes('ya existe') && !lowerErrorMessage.includes('correo electrónico')) ||
+                 (lowerErrorMessage.includes('numero de control') && lowerErrorMessage.includes('ya existe') && !lowerErrorMessage.includes('correo electrónico'))) {
           // Establecer el error directamente en el campo del número de control
           errors.controlNumber = 'Ya existe un estudiante con este número de control'
+          // Limpiar cualquier error previo del email
+          errors.email = ''
           // Enfocar el campo del número de control
           setTimeout(() => {
             const controlNumberInput = document.getElementById('controlNumber')
             if (controlNumberInput) {
               controlNumberInput.focus()
               controlNumberInput.select()
-            }
-          }, 100)
-        } 
-        // Verificar si es un error de duplicado del correo electrónico
-        // Buscar mensajes específicos del backend o patrones de error
-        else if (errorMessage.toLowerCase().includes('ya existe un estudiante con este correo electrónico') ||
-                 errorMessage.toLowerCase().includes('correo electrónico') && errorMessage.toLowerCase().includes('ya existe') ||
-                 fullErrorMessage.toLowerCase().includes('duplicate key') ||
-                 fullErrorString.includes('duplicate') && (fullErrorString.includes('email') || fullErrorString.includes('correo') || fullErrorString.includes('@') || fullErrorString.includes('gmail.com') || fullErrorString.includes('.com'))) {
-          // Establecer el error directamente en el campo del email
-          errors.email = 'Ya existe un estudiante con este correo electrónico'
-          // Enfocar el campo del email
-          setTimeout(() => {
-            const emailInput = document.getElementById('email')
-            if (emailInput) {
-              emailInput.focus()
-              emailInput.select()
             }
           }, 100)
         } else {
@@ -661,36 +759,41 @@ export function useStudentRegister() {
       console.log('Error message:', errorMessage)
       console.log('Full error message:', fullErrorMessage)
       
-      // Verificar si es un error de duplicado del número de control
-      if (errorMessage.toLowerCase().includes('número de control') || 
-          errorMessage.toLowerCase().includes('numero de control') ||
-          errorMessage.toLowerCase().includes('num_control') ||
-          (errorMessage.toLowerCase().includes('ya existe') && (fullErrorString.includes('control') || fullErrorString.includes('num_control')))) {
+      // Verificar EXACTAMENTE qué campo está duplicado basándose en el mensaje del backend
+      const lowerErrorMessage = errorMessage.toLowerCase()
+      const lowerFullErrorString = fullErrorString.toLowerCase()
+      
+      // Verificar si es error de CORREO ELECTRÓNICO (mensaje exacto del backend)
+      if (lowerErrorMessage.includes('ya existe un estudiante con este correo electrónico') ||
+          (lowerErrorMessage.includes('correo electrónico') && lowerErrorMessage.includes('ya existe') && !lowerErrorMessage.includes('número de control'))) {
+        // Establecer el error directamente en el campo del email
+        errors.email = 'Ya existe un estudiante con este correo electrónico'
+        // Limpiar cualquier error previo del número de control
+        errors.controlNumber = ''
+        // Enfocar el campo del email y hacer scroll hacia él
+        setTimeout(() => {
+          const emailInput = document.getElementById('email')
+          if (emailInput) {
+            emailInput.focus()
+            emailInput.select()
+            emailInput.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          }
+        }, 100)
+      } 
+      // Verificar si es error de NÚMERO DE CONTROL (mensaje exacto del backend)
+      else if (lowerErrorMessage.includes('ya existe un estudiante con este número de control') ||
+               (lowerErrorMessage.includes('número de control') && lowerErrorMessage.includes('ya existe') && !lowerErrorMessage.includes('correo electrónico')) ||
+               (lowerErrorMessage.includes('numero de control') && lowerErrorMessage.includes('ya existe') && !lowerErrorMessage.includes('correo electrónico'))) {
         // Establecer el error directamente en el campo del número de control
         errors.controlNumber = 'Ya existe un estudiante con este número de control'
+        // Limpiar cualquier error previo del email
+        errors.email = ''
         // Enfocar el campo del número de control
         setTimeout(() => {
           const controlNumberInput = document.getElementById('controlNumber')
           if (controlNumberInput) {
             controlNumberInput.focus()
             controlNumberInput.select()
-          }
-        }, 100)
-      } 
-      // Verificar si es un error de duplicado del correo electrónico
-      // Buscar mensajes específicos del backend o patrones de error
-      else if (errorMessage.toLowerCase().includes('ya existe un estudiante con este correo electrónico') ||
-               errorMessage.toLowerCase().includes('correo electrónico') && errorMessage.toLowerCase().includes('ya existe') ||
-               fullErrorMessage.toLowerCase().includes('duplicate key') ||
-               fullErrorString.includes('duplicate') && (fullErrorString.includes('email') || fullErrorString.includes('correo') || fullErrorString.includes('@') || fullErrorString.includes('gmail.com') || fullErrorString.includes('.com'))) {
-        // Establecer el error directamente en el campo del email
-        errors.email = 'Ya existe un estudiante con este correo electrónico'
-        // Enfocar el campo del email
-        setTimeout(() => {
-          const emailInput = document.getElementById('email')
-          if (emailInput) {
-            emailInput.focus()
-            emailInput.select()
           }
         }, 100)
       } else {
@@ -741,6 +844,10 @@ export function useStudentRegister() {
   })
 
   const addGrupo = () => {
+    // Generar clave de grupo única
+    const siguienteNumero = formData.grupos.length + 1
+    const claveGrupo = `GRP${String(siguienteNumero).padStart(3, '0')}`
+    
     formData.grupos.push({
       id_materia: null,
       nombre_materia: '',
@@ -748,21 +855,143 @@ export function useStudentRegister() {
       creditos: null,
       horas_teoria: null,
       horas_practica: null,
-      clave_grupo: `GRP${String(formData.grupos.length + 1).padStart(3, '0')}`,
+      clave_grupo: claveGrupo,
       semestre: '1',
       anio: new Date().getFullYear(),
       periodo: '1',
-      horario: '',
-      aula: ''
+      horario: '', // Se asignará cuando se seleccione la materia
+      aula: '' // Se asignará cuando se seleccione la materia
     })
   }
 
   const removeGrupo = (index) => {
     if (formData.grupos.length > 1) {
+      const grupo = formData.grupos[index]
+      // Liberar el aula asignada
+      const aulaAsignada = grupo.aula
+      const materiaId = grupo.id_materia
+      
+      if (aulaAsignada && materiaId) {
+        aulasAsignadas.value.delete(aulaAsignada)
+        // Limpiar cache de aula de la materia si ya no se usa en otros grupos
+        const sigueEnUso = formData.grupos.some((g, i) => i !== index && g.id_materia === materiaId)
+        if (!sigueEnUso) {
+          aulasPorMateria.value.delete(materiaId)
+        }
+      }
+      
       formData.grupos.splice(index, 1)
     }
   }
 
+  // Obtener horarios disponibles para una materia (2 opciones aleatorias)
+  // Si se pasa materiaId, genera horarios específicos para esa materia
+  // Si no, genera horarios aleatorios cada vez
+  const obtenerHorariosParaMateria = (materiaIndex, materiaId = null) => {
+    // Si se proporciona un materiaId y ya existe en cache, retornar los horarios guardados
+    if (materiaId && horariosPorMateria.value.has(materiaId)) {
+      return horariosPorMateria.value.get(materiaId)
+    }
+    
+    // Obtener una copia del array de horarios disponibles
+    const horariosDisponibles = [...horariosPredefinidos.value]
+    
+    // Seleccionar 2 horarios aleatorios diferentes
+    const horariosSeleccionados = []
+    
+    // Seleccionar primer horario aleatorio
+    const indice1 = Math.floor(Math.random() * horariosDisponibles.length)
+    horariosSeleccionados.push(horariosDisponibles[indice1])
+    
+    // Remover el primer horario para evitar duplicados
+    horariosDisponibles.splice(indice1, 1)
+    
+    // Seleccionar segundo horario aleatorio de los restantes
+    const indice2 = Math.floor(Math.random() * horariosDisponibles.length)
+    horariosSeleccionados.push(horariosDisponibles[indice2])
+    
+    // Si se proporciona materiaId, guardar en cache para mantener consistencia
+    if (materiaId) {
+      horariosPorMateria.value.set(materiaId, horariosSeleccionados)
+    }
+    
+    return horariosSeleccionados
+  }
+  
+  // Verificar si una materia es de inglés
+  const esMateriaIngles = (grupo) => {
+    if (!grupo) return false
+    
+    // Verificar por clave de materia (empieza con 'ING')
+    const clave = grupo.clave_materia?.toUpperCase() || ''
+    if (clave.startsWith('ING')) {
+      return true
+    }
+    
+    // Verificar por nombre de materia (contiene "inglés" o "ingles")
+    const nombre = grupo.nombre_materia?.toLowerCase() || ''
+    if (nombre.includes('inglés') || nombre.includes('ingles') || nombre.includes('english')) {
+      return true
+    }
+    
+    return false
+  }
+  
+  // Obtener aula aleatoria para una materia (similar a horarios)
+  const obtenerAulaParaMateria = (materiaId, grupo) => {
+    if (!materiaId || !grupo) return ''
+    
+    // Si ya se asignó un aula para esta materia, retornarla (consistencia)
+    if (aulasPorMateria.value.has(materiaId)) {
+      return aulasPorMateria.value.get(materiaId)
+    }
+    
+    // Las materias de inglés SIEMPRE usan salones normales, nunca laboratorios
+    const esIngles = esMateriaIngles(grupo)
+    
+    // Determinar qué tipo de aulas usar
+    let aulasDisponibles = []
+    if (esIngles) {
+      // Inglés siempre usa salones normales
+      aulasDisponibles = [...aulasNormales.value]
+    } else {
+      // Si la materia tiene horas de práctica, asignar laboratorio
+      // Si no, asignar salón normal
+      const esLaboratorio = grupo.horas_practica && grupo.horas_practica > 0
+      aulasDisponibles = esLaboratorio ? [...aulasLaboratorio.value] : [...aulasNormales.value]
+    }
+    
+    // Filtrar aulas que ya están asignadas a otras materias
+    const aulasSinAsignar = aulasDisponibles.filter(aula => !aulasAsignadas.value.has(aula))
+    
+    // Si hay aulas disponibles sin asignar, seleccionar una aleatoria
+    let aulaSeleccionada = ''
+    if (aulasSinAsignar.length > 0) {
+      const indiceAleatorio = Math.floor(Math.random() * aulasSinAsignar.length)
+      aulaSeleccionada = aulasSinAsignar[indiceAleatorio]
+    } else {
+      // Si todas están asignadas, seleccionar una aleatoria de todas las disponibles
+      const indiceAleatorio = Math.floor(Math.random() * aulasDisponibles.length)
+      aulaSeleccionada = aulasDisponibles[indiceAleatorio]
+    }
+    
+    // Guardar en cache para mantener consistencia
+    if (aulaSeleccionada) {
+      aulasPorMateria.value.set(materiaId, aulaSeleccionada)
+      aulasAsignadas.value.add(aulaSeleccionada)
+    }
+    
+    return aulaSeleccionada
+  }
+  
+  // Asignar aula automáticamente según el tipo de materia (aleatoria)
+  const asignarAulaAutomatica = (grupoIndex) => {
+    const grupo = formData.grupos[grupoIndex]
+    if (!grupo || !grupo.id_materia) return ''
+    
+    return obtenerAulaParaMateria(grupo.id_materia, grupo)
+  }
+  
   // Seleccionar materia y llenar datos automáticamente
   const seleccionarMateria = async (grupoIndex, materiaId) => {
     try {
@@ -772,6 +1001,18 @@ export function useStudentRegister() {
       const materia = materiasDisponibles.value.find(m => m.id_materia === materiaIdNum)
       
       if (materia && formData.grupos[grupoIndex]) {
+        // Remover aula anteriormente asignada si existía
+        const materiaAnteriorId = formData.grupos[grupoIndex].id_materia
+        const aulaAnterior = formData.grupos[grupoIndex].aula
+        if (aulaAnterior && materiaAnteriorId) {
+          // Solo liberar si cambiamos de materia
+          if (materiaAnteriorId !== materiaIdNum) {
+            aulasAsignadas.value.delete(aulaAnterior)
+            // Limpiar cache de aula de la materia anterior si ya no se usa
+            aulasPorMateria.value.delete(materiaAnteriorId)
+          }
+        }
+        
         // Actualizar los datos del grupo
         formData.grupos[grupoIndex].id_materia = materia.id_materia
         formData.grupos[grupoIndex].nombre_materia = materia.nombre_materia
@@ -779,6 +1020,14 @@ export function useStudentRegister() {
         formData.grupos[grupoIndex].creditos = materia.creditos
         formData.grupos[grupoIndex].horas_teoria = materia.horas_teoria
         formData.grupos[grupoIndex].horas_practica = materia.horas_practica
+        
+        // Generar nuevos horarios aleatorios para esta materia específica
+        const horarios = obtenerHorariosParaMateria(grupoIndex, materia.id_materia)
+        // Asignar el primer horario por defecto
+        formData.grupos[grupoIndex].horario = horarios[0]
+        
+        // Asignar aula automáticamente (usando el sistema de cache por materia)
+        formData.grupos[grupoIndex].aula = obtenerAulaParaMateria(materia.id_materia, formData.grupos[grupoIndex])
         
         // Forzar la actualización de la vista
         await nextTick()
@@ -815,6 +1064,13 @@ export function useStudentRegister() {
   }
 
   const resetForm = () => {
+    // Limpiar aulas asignadas
+    aulasAsignadas.value.clear()
+    // Limpiar cache de horarios
+    horariosPorMateria.value.clear()
+    // Limpiar cache de aulas por materia
+    aulasPorMateria.value.clear()
+    
     formData.controlNumber = ''
     formData.nombre = ''
     formData.apellidoPaterno = ''
@@ -840,6 +1096,7 @@ export function useStudentRegister() {
       work: false
     }
     formData.observaciones = ''
+    
     formData.grupos = [
       {
         id_materia: null,
@@ -898,6 +1155,9 @@ export function useStudentRegister() {
     materiasDisponibles,
     materiasCargando,
     cargarMateriasPorCarrera,
-    seleccionarMateria
+    seleccionarMateria,
+    // Nuevas funciones para grupos
+    opcionesClaveGrupo,
+    obtenerHorariosParaMateria
   }
 }

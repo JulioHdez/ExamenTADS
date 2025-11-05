@@ -10,6 +10,7 @@ declare module 'vue' {
     BarChart: typeof import('./src/components/charts/BarChart.vue')['default']
     BarChartApex: typeof import('./src/components/charts/BarChartApex.vue')['default']
     BaseModal: typeof import('./src/components/modals/BaseModal.vue')['default']
+    ChartDetailModal: typeof import('./src/components/modals/ChartDetailModal.vue')['default']
     ChartsSection: typeof import('./src/components/charts/ChartsSection.vue')['default']
     DarkModeToggle: typeof import('./src/components/ui/DarkModeToggle.vue')['default']
     DashboardSidebar: typeof import('./src/components/layout/DashboardSidebar.vue')['default']

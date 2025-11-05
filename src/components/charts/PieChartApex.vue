@@ -1,10 +1,12 @@
 <template>
   <div class="apex-chart-wrapper">
     <apexchart
+      ref="chartRef"
       type="pie"
       :options="chartOptions"
       :series="series"
       height="350"
+      @dataPointSelection="handleDataPointSelection"
     ></apexchart>
   </div>
 </template>
@@ -23,7 +25,10 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['dataPointSelection'])
+
 const isDarkMode = ref(false)
+const chartRef = ref(null)
 
 // Detectar el modo oscuro
 onMounted(() => {
@@ -65,6 +70,22 @@ const chartOptions = computed(() => ({
         },
         png: {
           filename: 'distribucion-estado-academico'
+        }
+      }
+    },
+    events: {
+      dataPointSelection: (event, chartContext, config) => {
+        const dataPointIndex = config.dataPointIndex
+        const selectedItem = props.data[dataPointIndex]
+        
+        if (selectedItem) {
+          emit('dataPointSelection', {
+            chartType: 'pie',
+            category: selectedItem.status,
+            value: selectedItem.count,
+            percentage: selectedItem.percentage,
+            dataPointIndex
+          })
         }
       }
     }
