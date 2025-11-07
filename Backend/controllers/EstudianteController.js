@@ -1044,18 +1044,116 @@ class EstudianteController extends BaseController {
                 }
             }
             
-            // Si se están actualizando grupos, eliminar los existentes y crear los nuevos
+            // Si se están actualizando grupos, hacer una actualización inteligente
             if (updateData.grupos) {
-                console.log('Actualizando grupos del estudiante...');
+                console.log('Actualizando grupos del estudiante ID:', id);
+                console.log('Grupos nuevos recibidos:', updateData.grupos);
                 
-                // Eliminar grupos existentes
                 const pool = await this.model.getPool();
-                const deleteGruposRequest = pool.request();
-                deleteGruposRequest.input('id_estudiante', mssql.Int, id);
-                await deleteGruposRequest.query('DELETE FROM grupos WHERE id_estudiante = @id_estudiante');
                 
-                // Crear nuevos grupos
-                await this.createGrupos(id, id_docente, updateData.grupos, req);
+                // Obtener grupos existentes con todos sus datos
+                const getGruposRequest = pool.request();
+                getGruposRequest.input('id_estudiante', mssql.Int, id);
+                const gruposExistentes = await getGruposRequest.query(`
+                    SELECT id_grupo, id_materia, semestre, anio, periodo, clave_grupo
+                    FROM grupos 
+                    WHERE id_estudiante = @id_estudiante
+                `);
+                
+                const gruposExistentesList = gruposExistentes.recordset;
+                console.log('Grupos existentes encontrados:', gruposExistentesList.length);
+                
+                // Si hay grupos nuevos, procesar la actualización
+                if (updateData.grupos && updateData.grupos.length > 0) {
+                    // Identificar grupos a eliminar (los que no están en la lista nueva)
+                    // Para esto, comparamos por id_materia, semestre, anio y periodo
+                    const gruposAEliminar = gruposExistentesList.filter(grupoExistente => {
+                        return !updateData.grupos.some(grupoNuevo => {
+                            return grupoNuevo.id_materia == grupoExistente.id_materia &&
+                                   grupoNuevo.semestre == grupoExistente.semestre &&
+                                   grupoNuevo.anio == grupoExistente.anio &&
+                                   grupoNuevo.periodo == grupoExistente.periodo;
+                        });
+                    });
+                    
+                    console.log('Grupos a eliminar:', gruposAEliminar.length);
+                    
+                    // Eliminar solo los grupos que ya no están en la lista nueva
+                    if (gruposAEliminar.length > 0) {
+                        const gruposIdsAEliminar = gruposAEliminar.map(g => g.id_grupo);
+                        console.log('IDs de grupos a eliminar:', gruposIdsAEliminar);
+                        
+                        // Primero eliminar calificaciones parciales de los grupos que se van a eliminar
+                        const deleteCalifRequest = pool.request();
+                        // Construir la lista de parámetros de forma segura
+                        const califParams = gruposIdsAEliminar.map((gId, idx) => {
+                            deleteCalifRequest.input(`grupoId${idx}`, mssql.Int, gId);
+                            return `@grupoId${idx}`;
+                        }).join(',');
+                        
+                        const califResult = await deleteCalifRequest.query(`
+                            DELETE FROM calificaciones_parciales 
+                            WHERE id_grupo IN (${califParams})
+                        `);
+                        console.log('Calificaciones parciales eliminadas:', califResult.rowsAffected[0]);
+                        
+                        // Luego eliminar solo esos grupos específicos
+                        const deleteGruposRequest = pool.request();
+                        // Construir la lista de parámetros de forma segura
+                        const gruposParams = gruposIdsAEliminar.map((gId, idx) => {
+                            deleteGruposRequest.input(`grupoId${idx}`, mssql.Int, gId);
+                            return `@grupoId${idx}`;
+                        }).join(',');
+                        
+                        const gruposDeleteResult = await deleteGruposRequest.query(`
+                            DELETE FROM grupos 
+                            WHERE id_grupo IN (${gruposParams})
+                        `);
+                        console.log('Grupos eliminados:', gruposDeleteResult.rowsAffected[0]);
+                    }
+                    
+                    // Identificar grupos nuevos (los que no existen aún)
+                    const gruposNuevos = updateData.grupos.filter(grupoNuevo => {
+                        return !gruposExistentesList.some(grupoExistente => {
+                            return grupoNuevo.id_materia == grupoExistente.id_materia &&
+                                   grupoNuevo.semestre == grupoExistente.semestre &&
+                                   grupoNuevo.anio == grupoExistente.anio &&
+                                   grupoNuevo.periodo == grupoExistente.periodo;
+                        });
+                    });
+                    
+                    console.log('Grupos nuevos a crear:', gruposNuevos.length);
+                    
+                    // Crear solo los grupos nuevos
+                    if (gruposNuevos.length > 0) {
+                        await this.createGrupos(id, id_docente, gruposNuevos, req);
+                    } else {
+                        console.log('No hay grupos nuevos para crear');
+                    }
+                } else {
+                    // Si se envía un array vacío, eliminar todos los grupos
+                    console.log('Array de grupos vacío, eliminando todos los grupos del estudiante');
+                    if (gruposExistentesList.length > 0) {
+                        const gruposIds = gruposExistentesList.map(g => g.id_grupo);
+                        
+                        // Eliminar calificaciones primero (usando subquery para evitar SQL injection)
+                        const deleteCalifRequest = pool.request();
+                        deleteCalifRequest.input('id_estudiante', mssql.Int, id);
+                        await deleteCalifRequest.query(`
+                            DELETE FROM calificaciones_parciales 
+                            WHERE id_grupo IN (
+                                SELECT id_grupo FROM grupos WHERE id_estudiante = @id_estudiante
+                            )
+                        `);
+                        
+                        // Luego eliminar grupos
+                        const deleteGruposRequest = pool.request();
+                        deleteGruposRequest.input('id_estudiante', mssql.Int, id);
+                        await deleteGruposRequest.query('DELETE FROM grupos WHERE id_estudiante = @id_estudiante');
+                    }
+                }
+                
+                console.log('Actualización de grupos completada');
             }
             
             res.json({ success: true, message: 'Estudiante actualizado exitosamente' });
