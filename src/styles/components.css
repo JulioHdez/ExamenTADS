@@ -30,3 +30,64 @@
 .grey-mode {
   filter: grayscale(100%) !important;
 }
+
+/* --- High Contrast Mode --- */
+.high-contrast {
+  filter: none !important; /* aseguramos que no afecte por grayscale */
+  background-color: #000 !important;
+  color: #ffffff !important;
+}
+
+.high-contrast * {
+  background: transparent !important;
+  color: #ffff00 !important; /* texto/elementos en amarillo accesible */
+  border-color: #ffff00 !important;
+  box-shadow: none !important;
+}
+
+/* Ajustes puntuales para botones / cards en high contrast */
+.high-contrast .nav-link,
+.high-contrast .logout-btn,
+.high-contrast .user-info {
+  background: transparent !important;
+  border: 1px solid #ffff00 !important;
+  color: #ffffff !important;
+}
+
+/* --- Daltonismo modes (aplican filtros SVG definidos en index.html) --- */
+.protanopia {
+  filter: url('#protanopia') !important;
+}
+
+.deuteranopia {
+  filter: url('#deuteranopia') !important;
+}
+
+.tritanopia {
+  filter: url('#tritanopia') !important;
+}
+
+/* Aseguramos que los filtros no rompan imágenes de fondo */
+.protanopia img,
+.deuteranopia img,
+.tritanopia img {
+  /* opcional: mantener imágenes visibles correctamente */
+}
+
+/* --- Pequeños estilos para el selector en el sidebar (si lo añades) --- */
+.accessibility-daltonism {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+.accessibility-daltonism select {
+  margin-left: auto;
+  background: transparent;
+  color: inherit;
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 4px 6px;
+  border-radius: 6px;
+}

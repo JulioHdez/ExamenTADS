@@ -1,5 +1,10 @@
 <template>
-  <div class="sidebar" :class="{ 'sidebar-expanded': isExpanded }" @mouseenter="expandSidebar" @mouseleave="collapseSidebar">
+  <div
+    class="sidebar"
+    :class="isExpanded ? 'sidebar-expanded' : 'sidebar-collapsed'"
+    @mouseenter="expandSidebar"
+    @mouseleave="collapseSidebar"
+  >
     <div class="sidebar-header">
       <div class="logo">
         <div class="logo-icon">📊</div>
@@ -8,9 +13,16 @@
         </transition>
       </div>
     </div>
+
     <nav class="sidebar-nav">
       <ul class="nav-list">
-        <li v-for="item in menuItems" :key="item.id" class="nav-item" :class="{ 'active': activeItem === item.id }" @click="setActiveItem(item.id)">
+        <li
+          v-for="item in menuItems"
+          :key="item.id"
+          class="nav-item"
+          :class="{ 'active': activeItem === item.id }"
+          @click="setActiveItem(item.id)"
+        >
           <a href="#" class="nav-link">
             <span class="nav-icon">{{ item.icon }}</span>
             <transition name="fade">
@@ -18,24 +30,42 @@
             </transition>
           </a>
         </li>
+
+        <!-- ACCESIBILIDAD: Escala de grises -->
+        <li class="nav-item" @click="toggleGreyMode">
+          <a class="nav-link" href="#">
+            <span class="nav-icon">🌓</span>
+            <transition name="fade">
+              <span v-if="isExpanded" class="nav-text">Escala de grises</span>
+            </transition>
+            <input
+              type="checkbox"
+              class="accessibility-toggle"
+              :checked="isGreyMode"
+              @click.stop="toggleGreyMode"
+              aria-label="Activar escala de grises"
+            />
+          </a>
+        </li>
+
+        <!-- ACCESIBILIDAD: Lectura en voz alta -->
+        <li class="nav-item" @click="toggleVoiceReader">
+          <a class="nav-link" href="#">
+            <span class="nav-icon">🔊</span>
+            <transition name="fade">
+              <span v-if="isExpanded" class="nav-text">Lectura en voz alta</span>
+            </transition>
+            <input
+              type="checkbox"
+              class="accessibility-toggle"
+              :checked="isVoiceReader"
+              @click.stop="toggleVoiceReader"
+              aria-label="Activar lectura en voz alta"
+            />
+          </a>
+        </li>
       </ul>
     </nav>
-     <div class="accessibility-section" @click="toggleGreyMode">
-      <span class="nav-icon">🌓</span>
-      <transition name="fade">
-        <span v-if="isExpanded" class="nav-text">Escala de grises</span>
-      </transition>
-
-      <input type="checkbox" class="grey-checkbox" :checked="isGreyMode" />
-    </div>
-    
-<div class="accessibility-section" @click="toggleVoiceReader">
-  <span class="nav-icon">🔊</span>
-  <transition name="fade">
-    <span v-if="isExpanded" class="nav-text">Lectura en voz alta</span>
-  </transition>
-  <input type="checkbox" class="grey-checkbox" :checked="isVoiceReader" />
-</div>
 
     <!-- Usuario y Logout -->
     <div class="sidebar-footer">
@@ -57,26 +87,26 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/stores/auth'
+import { ref, watchEffect, onMounted, onBeforeUnmount } from "vue";
+import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
 const props = defineProps({
   activeItem: {
     type: String,
     default: 'dashboard'
   }
-})
+});
 
-const emit = defineEmits(['update:activeItem', 'sidebar-toggle'])
+const emit = defineEmits(['update:activeItem', 'sidebar-toggle']);
 
-const router = useRouter()
-const authStore = useAuthStore()
+const router = useRouter();
+const authStore = useAuthStore();
 
-const isExpanded = ref(false)
+const isExpanded = ref(false);
 
 // Obtener información del usuario
-const userInfo = authStore.userInfo
+const userInfo = authStore.userInfo;
 
 const menuItems = [
   { id: 'dashboard', text: 'Página Principal', icon: '🏠' },
@@ -89,46 +119,48 @@ const menuItems = [
   { id: 'import', text: 'Importar Datos', icon: '📥' },
   { id: 'export', text: 'Exportar Datos', icon: '📤' },
   { id: 'more-info', text: 'Más Información', icon: 'ℹ️' }
-]
+];
 
 const expandSidebar = () => {
-  isExpanded.value = true
-  emit('sidebar-toggle', true)
-}
+  isExpanded.value = true;
+  emit('sidebar-toggle', true);
+};
 
 const collapseSidebar = () => {
-  isExpanded.value = false
-  emit('sidebar-toggle', false)
-}
+  isExpanded.value = false;
+  emit('sidebar-toggle', false);
+};
 
 const setActiveItem = (itemId) => {
-  emit('update:activeItem', itemId)
-}
+  emit('update:activeItem', itemId);
+};
 
-
+/* ---------- Escala de grises ---------- */
 const isGreyMode = ref(localStorage.getItem("grey-mode") === "true");
 
 watchEffect(() => {
+  // Mantener otros posibles filtros: aquí reemplazamos sólo el filtro global.
   if (isGreyMode.value) {
     document.body.style.filter = "grayscale(100%)";
   } else {
-    document.body.style.filter = "none";
+    // quitar sólo el filtro (no tocar otros estilos)
+    // si otras partes usan filter, podrías extender esto. Por ahora regresamos a none.
+    document.body.style.filter = "";
   }
 });
-/* Escala grises */
+
 const toggleGreyMode = () => {
   isGreyMode.value = !isGreyMode.value;
   localStorage.setItem("grey-mode", isGreyMode.value);
 };
 
-/* Lector de pantalla */
-
-// Estado ON/OFF
+/* ---------- Lector de pantalla (hover) ---------- */
 const isVoiceReader = ref(localStorage.getItem("voice-reader") === "true");
 
-// Función que habla
 const speak = (text) => {
   if (!window.speechSynthesis || !isVoiceReader.value) return;
+  // evitar leer cosas demasiado largas o repetidas:
+  if (!text || text.length > 400) return;
 
   const utter = new SpeechSynthesisUtterance(text);
   utter.lang = "es-MX";
@@ -139,52 +171,72 @@ const speak = (text) => {
   window.speechSynthesis.speak(utter);
 };
 
-// Detectar elementos con texto en toda la app
+let _hoverHandler = null;
+
 const enableGlobalHoverReader = () => {
-  document.body.addEventListener("mouseover", (e) => {
+  // guardamos handler para poder removerlo después
+  _hoverHandler = (e) => {
     if (!isVoiceReader.value) return;
 
     const el = e.target;
 
-    // Sacar el texto visible
-    let text = el.innerText?.trim();
+    // No leer inputs editables mientras el usuario escribe
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable) return;
 
-    // Evitar que lea vacío o spam
+    const text = (el.innerText || el.alt || el.title || '').trim();
+
     if (!text || text.length < 2) return;
 
-    // Evitar que lea textos repetitivos muchas veces
-    if (el.dataset.lastRead === text) return;
+    // evitar lecturas repetidas inmediatas
+    const last = el.dataset.lastRead;
+    if (last === text) return;
     el.dataset.lastRead = text;
 
     speak(text);
-  });
+  };
+
+  document.body.addEventListener("mouseover", _hoverHandler, { passive: true });
+};
+
+const disableGlobalHoverReader = () => {
+  if (_hoverHandler) {
+    document.body.removeEventListener("mouseover", _hoverHandler);
+    _hoverHandler = null;
+  }
 };
 
 onMounted(() => {
-  enableGlobalHoverReader();
+  // Si venía activado desde localStorage, lo iniciamos
+  if (isVoiceReader.value) {
+    enableGlobalHoverReader();
+  }
 });
 
-// Activar/desactivar desde el sidebar
+onBeforeUnmount(() => {
+  disableGlobalHoverReader();
+});
+
 const toggleVoiceReader = () => {
   isVoiceReader.value = !isVoiceReader.value;
   localStorage.setItem("voice-reader", isVoiceReader.value);
 
-  if (!isVoiceReader.value) {
+  if (isVoiceReader.value) {
+    enableGlobalHoverReader();
+  } else {
+    disableGlobalHoverReader();
     window.speechSynthesis.cancel();
   }
 };
 
-
-
-
+/* ---------- Logout ---------- */
 const handleLogout = async () => {
   try {
-    await authStore.logout()
-    router.push('/')
+    await authStore.logout();
+    router.push('/');
   } catch (error) {
-    console.error('Error al cerrar sesión:', error)
+    console.error('Error al cerrar sesión:', error);
   }
-}
+};
 </script>
 
 <style scoped>
@@ -205,6 +257,11 @@ const handleLogout = async () => {
 
 .sidebar-expanded {
   width: calc(250px * var(--zoom-scale, 1));
+}
+
+/* Cuando está colapsado, ocultamos los toggles (checkbox) */
+.sidebar-collapsed .accessibility-toggle {
+  display: none !important;
 }
 
 .sidebar-header {
@@ -446,5 +503,3 @@ const handleLogout = async () => {
   }
 }
 </style>
-
-
