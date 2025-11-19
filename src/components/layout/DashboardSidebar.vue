@@ -20,7 +20,23 @@
         </li>
       </ul>
     </nav>
+     <div class="accessibility-section" @click="toggleGreyMode">
+      <span class="nav-icon">🌓</span>
+      <transition name="fade">
+        <span v-if="isExpanded" class="nav-text">Escala de grises</span>
+      </transition>
+
+      <input type="checkbox" class="grey-checkbox" :checked="isGreyMode" />
+    </div>
     
+<div class="accessibility-section" @click="toggleVoiceReader">
+  <span class="nav-icon">🔊</span>
+  <transition name="fade">
+    <span v-if="isExpanded" class="nav-text">Lectura en voz alta</span>
+  </transition>
+  <input type="checkbox" class="grey-checkbox" :checked="isVoiceReader" />
+</div>
+
     <!-- Usuario y Logout -->
     <div class="sidebar-footer">
       <div class="user-info" v-if="isExpanded">
@@ -88,6 +104,78 @@ const collapseSidebar = () => {
 const setActiveItem = (itemId) => {
   emit('update:activeItem', itemId)
 }
+
+
+const isGreyMode = ref(localStorage.getItem("grey-mode") === "true");
+
+watchEffect(() => {
+  if (isGreyMode.value) {
+    document.body.style.filter = "grayscale(100%)";
+  } else {
+    document.body.style.filter = "none";
+  }
+});
+/* Escala grises */
+const toggleGreyMode = () => {
+  isGreyMode.value = !isGreyMode.value;
+  localStorage.setItem("grey-mode", isGreyMode.value);
+};
+
+/* Lector de pantalla */
+
+// Estado ON/OFF
+const isVoiceReader = ref(localStorage.getItem("voice-reader") === "true");
+
+// Función que habla
+const speak = (text) => {
+  if (!window.speechSynthesis || !isVoiceReader.value) return;
+
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = "es-MX";
+  utter.rate = 1;
+  utter.pitch = 1;
+
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utter);
+};
+
+// Detectar elementos con texto en toda la app
+const enableGlobalHoverReader = () => {
+  document.body.addEventListener("mouseover", (e) => {
+    if (!isVoiceReader.value) return;
+
+    const el = e.target;
+
+    // Sacar el texto visible
+    let text = el.innerText?.trim();
+
+    // Evitar que lea vacío o spam
+    if (!text || text.length < 2) return;
+
+    // Evitar que lea textos repetitivos muchas veces
+    if (el.dataset.lastRead === text) return;
+    el.dataset.lastRead = text;
+
+    speak(text);
+  });
+};
+
+onMounted(() => {
+  enableGlobalHoverReader();
+});
+
+// Activar/desactivar desde el sidebar
+const toggleVoiceReader = () => {
+  isVoiceReader.value = !isVoiceReader.value;
+  localStorage.setItem("voice-reader", isVoiceReader.value);
+
+  if (!isVoiceReader.value) {
+    window.speechSynthesis.cancel();
+  }
+};
+
+
+
 
 const handleLogout = async () => {
   try {
@@ -358,3 +446,5 @@ const handleLogout = async () => {
   }
 }
 </style>
+
+

@@ -27,3 +27,6 @@
 .btn-secondary:hover {
   background-color: #f9fafb;
 }
+.grey-mode {
+  filter: grayscale(100%) !important;
+}
