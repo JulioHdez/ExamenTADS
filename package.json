@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:all": "concurrently -n \"backend,frontend\" -c \"blue,green\" \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd Backend && npm start",
+    "dev:frontend": "npm run dev",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",

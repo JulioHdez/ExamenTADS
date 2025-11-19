@@ -5,7 +5,7 @@
         <!-- Primera fila de campos -->
         <div class="form-row">
           <div class="form-group">
-            <label for="controlNumber" class="form-label">No. Control</label>
+            <label for="controlNumber" class="form-label">No. Control <span class="required-asterisk">*</span></label>
             <input
               type="text"
               id="controlNumber"
@@ -23,7 +23,7 @@
           </div>
           
           <div class="form-group">
-            <label for="nombre" class="form-label">Nombre</label>
+            <label for="nombre" class="form-label">Nombre <span class="required-asterisk">*</span></label>
             <input
               type="text"
               id="nombre"
@@ -44,7 +44,7 @@
       <!-- Segunda fila de campos - Apellidos -->
       <div class="form-row">
         <div class="form-group">
-          <label for="apellidoPaterno" class="form-label">Apellido Paterno</label>
+          <label for="apellidoPaterno" class="form-label">Apellido Paterno <span class="required-asterisk">*</span></label>
           <input
             type="text"
             id="apellidoPaterno"
@@ -62,7 +62,7 @@
         </div>
         
         <div class="form-group">
-          <label for="apellidoMaterno" class="form-label">Apellido Materno</label>
+          <label for="apellidoMaterno" class="form-label">Apellido Materno <span class="required-asterisk">*</span></label>
           <input
             type="text"
             id="apellidoMaterno"
@@ -83,7 +83,7 @@
       <!-- Tercera fila de campos - Género y Fecha de Nacimiento -->
       <div class="form-row">
         <div class="form-group">
-          <label for="genero" class="form-label">Género</label>
+          <label for="genero" class="form-label">Género <span class="required-asterisk">*</span></label>
           <select 
             id="genero" 
             v-model="formData.genero" 
@@ -101,7 +101,7 @@
         </div>
         
         <div class="form-group">
-          <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento</label>
+          <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento <span class="required-asterisk">*</span></label>
           <input
             type="date"
             id="fechaNacimiento"
@@ -118,7 +118,7 @@
       <!-- Cuarta fila de campos - Email y Teléfono -->
       <div class="form-row">
         <div class="form-group">
-          <label for="email" class="form-label">Email</label>
+          <label for="email" class="form-label">Email <span class="required-asterisk">*</span></label>
           <input
             type="email"
             id="email"
@@ -173,7 +173,7 @@
       <!-- Sexta fila de campos - Carrera y Semestre -->
       <div class="form-row">
         <div class="form-group">
-          <label for="career" class="form-label">Carrera</label>
+          <label for="career" class="form-label">Carrera <span class="required-asterisk">*</span></label>
           <select 
             id="career" 
             v-model="formData.career" 
@@ -195,7 +195,7 @@
         </div>
         
         <div class="form-group">
-          <label for="semester" class="form-label">Semestre Actual</label>
+          <label for="semester" class="form-label">Semestre Actual <span class="required-asterisk">*</span></label>
           <select 
             id="semester" 
             v-model="formData.semester" 
@@ -223,7 +223,7 @@
       <!-- Séptima fila de campos - Fecha de Ingreso y Estatus -->
       <div class="form-row">
         <div class="form-group">
-          <label for="fechaIngreso" class="form-label">Fecha de Ingreso</label>
+          <label for="fechaIngreso" class="form-label">Fecha de Ingreso <span class="required-asterisk">*</span></label>
           <input
             type="date"
             id="fechaIngreso"
@@ -237,7 +237,7 @@
         </div>
         
         <div class="form-group">
-          <label for="estatus" class="form-label">Estatus</label>
+          <label for="estatus" class="form-label">Estatus <span class="required-asterisk">*</span></label>
           <select 
             id="estatus" 
             v-model="formData.estatus" 

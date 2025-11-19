@@ -7,9 +7,14 @@
       @sidebar-toggle="handleSidebarToggle"
     />
     
-    <!-- Dark Mode Toggle - Fuera del sidebar -->
-    <div class="dark-mode-toggle">
-      <DarkModeToggle />
+    <!-- Controles de Accesibilidad - Fuera del sidebar -->
+    <div class="accessibility-controls">
+      <div class="zoom-controls-wrapper">
+        <ZoomControls />
+      </div>
+      <div class="dark-mode-toggle">
+        <DarkModeToggle />
+      </div>
     </div>
     
     <div class="main-content" :class="{ 'sidebar-expanded': isSidebarExpanded }">
@@ -89,6 +94,11 @@
       :is-open="showDispersionModal" 
       @close="closeDispersionModal"
     />
+    
+    <MoreInfoModal 
+      :is-open="showMoreInfoModal" 
+      @close="closeMoreInfoModal"
+    />
   </div>
 </template>
 
@@ -107,7 +117,9 @@ import IshikawaModal from '@/components/modals/IshikawaModal.vue'
 import IshikawaFullscreen from '@/components/modals/IshikawaFullscreen.vue'
 import HistogramModal from '@/components/modals/HistogramModal.vue'
 import DispersionModal from '@/components/modals/DispersionModal.vue'
+import MoreInfoModal from '@/components/modals/MoreInfoModal.vue'
 import DarkModeToggle from '@/components/ui/DarkModeToggle.vue'
+import ZoomControls from '@/components/ui/ZoomControls.vue'
 import { useDashboardData } from '@/composables/useDashboardData'
 
 // Sidebar state
@@ -126,6 +138,7 @@ const showIshikawaModal = ref(false)
 const showIshikawaFullscreen = ref(false)
 const showHistogramModal = ref(false)
 const showDispersionModal = ref(false)
+const showMoreInfoModal = ref(false)
 const ishikawaData = ref(null)
 
 // Estado para el estudiante a editar
@@ -155,6 +168,8 @@ const setActiveItem = (itemId) => {
     showHistogramModal.value = true
   } else if (itemId === 'scatter') {
     showDispersionModal.value = true
+  } else if (itemId === 'more-info') {
+    showMoreInfoModal.value = true
   }
 }
 
@@ -234,6 +249,11 @@ const closeDispersionModal = () => {
   activeItem.value = 'dashboard'
 }
 
+const closeMoreInfoModal = () => {
+  showMoreInfoModal.value = false
+  activeItem.value = 'dashboard'
+}
+
 const handleStudentSubmit = (studentData) => {
   console.log('Estudiante registrado exitosamente:', studentData)
   // La notificación de éxito ya se muestra desde el composable
@@ -269,20 +289,37 @@ onMounted(() => {
 @import '@/styles/dashboard.css';
 @import '@/styles/components.css';
 
-.dark-mode-toggle {
+.accessibility-controls {
   position: fixed;
   top: 1rem;
   right: 1rem;
-  z-index: 1001;
+  z-index: 10001;
+  display: flex;
+  flex-direction: row;
+  gap: 0.75rem;
+  align-items: center;
+  pointer-events: none;
+}
+
+.accessibility-controls > * {
+  pointer-events: auto;
+}
+
+.dark-mode-toggle {
+  /* Mantener estilos existentes */
+}
+
+.zoom-controls-wrapper {
+  /* El componente ZoomControls ya tiene sus propios estilos */
 }
 
 .main-content {
-  margin-left: 60px;
+  margin-left: calc(60px * var(--zoom-scale, 1));
   transition: margin-left 0.3s ease;
   min-height: 100vh;
 }
 
 .main-content.sidebar-expanded {
-  margin-left: 250px;
+  margin-left: calc(250px * var(--zoom-scale, 1));
 }
 </style>

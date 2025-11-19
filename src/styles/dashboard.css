@@ -14,7 +14,7 @@
 /* Main Content */
 .main-content {
   flex: 1;
-  margin-left: 60px;
+  margin-left: calc(60px * var(--zoom-scale, 1));
   padding: 2rem;
   transition: margin-left 0.3s ease;
 }

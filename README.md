@@ -34,7 +34,11 @@ Un sistema completo de dashboard para análisis de datos estudiantiles construid
 
 2. **Ejecutar en modo desarrollo:**
    ```bash
+   # Ejecutar solo el frontend
    npm run dev
+   
+   # Ejecutar backend y frontend simultáneamente (recomendado)
+   npm run dev:all
    ```
 
 3. **Construir para producción:**
@@ -49,7 +53,10 @@ Un sistema completo de dashboard para análisis de datos estudiantiles construid
 
 ## 🛠️ Scripts Disponibles
 
-- `npm run dev` - Inicia el servidor de desarrollo
+- `npm run dev` - Inicia solo el servidor de desarrollo del frontend
+- `npm run dev:all` - Inicia backend y frontend simultáneamente (recomendado para desarrollo)
+- `npm run dev:backend` - Inicia solo el backend
+- `npm run dev:frontend` - Inicia solo el frontend
 - `npm run build` - Construye la aplicación para producción
 - `npm run preview` - Previsualiza el build de producción
 - `npm run lint` - Ejecuta ESLint para verificar el código
@@ -303,8 +310,11 @@ src/
 
 ### Comandos Disponibles
 ```bash
-# Desarrollo con hot reload (puerto 5173)
+# Desarrollo con hot reload (puerto 5173) - Solo frontend
 npm run dev
+
+# Desarrollo completo - Backend y frontend simultáneamente (recomendado)
+npm run dev:all
 
 # Linting del código
 npm run lint

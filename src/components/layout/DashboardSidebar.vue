@@ -71,7 +71,8 @@ const menuItems = [
   { id: 'histograms', text: 'Histogramas', icon: '📈' },
   { id: 'scatter', text: 'Dispersión', icon: '🔍' },
   { id: 'import', text: 'Importar Datos', icon: '📥' },
-  { id: 'export', text: 'Exportar Datos', icon: '📤' }
+  { id: 'export', text: 'Exportar Datos', icon: '📤' },
+  { id: 'more-info', text: 'Más Información', icon: 'ℹ️' }
 ]
 
 const expandSidebar = () => {
@@ -105,7 +106,7 @@ const handleLogout = async () => {
   left: 0;
   top: 0;
   height: 100vh;
-  width: 60px;
+  width: calc(60px * var(--zoom-scale, 1));
   background: linear-gradient(180deg, #2C4068 0%, #1a2a4a 100%);
   transition: width 0.3s ease;
   z-index: 1000;
@@ -115,7 +116,7 @@ const handleLogout = async () => {
 }
 
 .sidebar-expanded {
-  width: 250px;
+  width: calc(250px * var(--zoom-scale, 1));
 }
 
 .sidebar-header {

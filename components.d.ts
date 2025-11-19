@@ -31,6 +31,7 @@ declare module 'vue' {
     LineChartApex: typeof import('./src/components/charts/LineChartApex.vue')['default']
     MetricCard: typeof import('./src/components/ui/MetricCard.vue')['default']
     MetricsGrid: typeof import('./src/components/ui/MetricsGrid.vue')['default']
+    MoreInfoModal: typeof import('./src/components/modals/MoreInfoModal.vue')['default']
     NotificationContainer: typeof import('./src/components/ui/NotificationContainer.vue')['default']
     NotificationToast: typeof import('./src/components/ui/NotificationToast.vue')['default']
     ParetoChart: typeof import('./src/components/charts/ParetoChart.vue')['default']
@@ -42,5 +43,6 @@ declare module 'vue' {
     Sidebar: typeof import('./src/components/layout/Sidebar.vue')['default']
     StudentRegisterModal: typeof import('./src/components/modals/StudentRegisterModal.vue')['default']
     StudentsListModal: typeof import('./src/components/modals/StudentsListModal.vue')['default']
+    ZoomControls: typeof import('./src/components/ui/ZoomControls.vue')['default']
   }
 }
