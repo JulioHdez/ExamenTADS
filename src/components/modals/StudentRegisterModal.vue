@@ -490,7 +490,7 @@
                   <span class="grade-suffix">/ 100</span>
                   <span v-if="errors.grades[index]" class="error-message grade-error">{{ errors.grades[index] }}</span>
                   <span v-if="unit.grade && parseFloat(unit.grade) < 70 && !errors.grades[index]" class="grade-warning">
-                    El usuario no aprobó la materia
+                    El usuario no aprobó la unidad
                   </span>
                 </div>
               </div>
