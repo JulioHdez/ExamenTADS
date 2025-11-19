@@ -211,13 +211,30 @@ class DocenteController extends BaseController {
                 });
             }
 
+            // Obtener información del rol
+            const { getConnection, mssql } = require('../config/connection');
+            const pool = await getConnection();
+            const rolResult = await pool.request()
+                .input('id_docente', mssql.Int, docente.id_docente)
+                .query(`
+                    SELECT r.id_rol, r.nombre_rol
+                    FROM docentes d
+                    INNER JOIN roles r ON d.id_rol = r.id_rol
+                    WHERE d.id_docente = @id_docente
+                `);
+            
+            const rolInfo = rolResult.recordset[0] || { id_rol: 1, nombre_rol: 'Administrador' };
+
             // Generar token JWT
             const token = jwt.sign(
                 { 
                     id_docente: docente.id_docente,
                     email: docente.email,
                     nombre: docente.nombre,
-                    apellido_paterno: docente.apellido_paterno
+                    apellido_paterno: docente.apellido_paterno,
+                    id_rol: rolInfo.id_rol,
+                    nombre_rol: rolInfo.nombre_rol,
+                    tipo: 'docente'
                 },
                 process.env.JWT_SECRET || 'itt-tasd-secret-key',
                 { expiresIn: '24h' }

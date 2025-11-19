@@ -184,17 +184,22 @@ const handleLogin = async () => {
     console.log('Resultado del login:', result)
     
     if (result && result.success) {
-      console.log('Login exitoso, redirigiendo al dashboard...')
+      console.log('Login exitoso, redirigiendo según rol...')
       console.log('Token guardado:', authStore.token)
       console.log('Usuario:', authStore.user)
+      console.log('Tipo de usuario:', result.userType)
       
       showSuccess(
         '¡Bienvenido!',
         'Has iniciado sesión correctamente'
       )
       
-      // Redireccionar inmediatamente
-      await router.push('/dashboard')
+      // Redireccionar según el tipo de usuario
+      if (result.userType === 'profesor' || authStore.isProfesor) {
+        await router.push('/profesor-dashboard')
+      } else {
+        await router.push('/dashboard')
+      }
       console.log('Redirección completada')
     } else {
       // Manejar error de credenciales incorrectas

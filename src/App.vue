@@ -16,8 +16,12 @@ const authStore = useAuthStore()
 
 // Inicializar la autenticación al montar la app
 onMounted(() => {
-  console.log('App montada, inicializando autenticación...')
-  authStore.initializeAuth()
+  try {
+    console.log('App montada, inicializando autenticación...')
+    authStore.initializeAuth()
+  } catch (error) {
+    console.error('Error al inicializar autenticación:', error)
+  }
 })
 </script>
 

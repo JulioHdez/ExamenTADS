@@ -1,8 +1,8 @@
-# 📊 Sistema de Dashboard Estudiantil - Vue.js
+# Sistema de Dashboard Estudiantil - Vue.js
 
 Un sistema completo de dashboard para análisis de datos estudiantiles construido con Vue.js 3, diseñado para monitorear métricas académicas, gestionar estudiantes, analizar factores de riesgo y generar visualizaciones de datos.
 
-## 🚀 Tecnologías Utilizadas
+## Tecnologías Utilizadas
 
 - **Vue.js 3** - Framework progresivo con Composition API
 - **Vite** - Herramienta de construcción rápida y moderna
@@ -25,7 +25,7 @@ Un sistema completo de dashboard para análisis de datos estudiantiles construid
 - **JointJS** - Diagramas interactivos
 - **Mermaid** - Generación de diagramas desde texto
 
-## 📦 Instalación
+## Instalación
 
 1. **Instalar dependencias:**
    ```bash
@@ -51,7 +51,7 @@ Un sistema completo de dashboard para análisis de datos estudiantiles construid
    npm run preview
    ```
 
-## 🛠️ Scripts Disponibles
+## Scripts Disponibles
 
 - `npm run dev` - Inicia solo el servidor de desarrollo del frontend
 - `npm run dev:all` - Inicia backend y frontend simultáneamente (recomendado para desarrollo)
@@ -62,7 +62,7 @@ Un sistema completo de dashboard para análisis de datos estudiantiles construid
 - `npm run lint` - Ejecuta ESLint para verificar el código
 - `npm run format` - Formatea el código con Prettier
 
-## 🏗️ Arquitectura del Proyecto
+## Arquitectura del Proyecto
 
 ### Estructura Modular Organizada
 
@@ -118,9 +118,9 @@ src/
 └── main.js                     # Punto de entrada
 ```
 
-## 🎯 Funcionalidades del Sistema
+## Funcionalidades del Sistema
 
-### 🔐 Sistema de Autenticación
+### Sistema de Autenticación
 - **Login Seguro**: Autenticación JWT con validación de credenciales
 - **Guards de Rutas**: Protección automática de rutas sensibles
 - **Gestión de Sesión**: Manejo de tokens JWT y estado de autenticación
@@ -128,51 +128,51 @@ src/
 - **Credenciales Demo**: 
   - Usuario: `mguerrero@tec.com` / Contraseña: `password123`
 
-### 📊 Dashboard Principal
+### Dashboard Principal
 - **Métricas en Tiempo Real**: Total de estudiantes, tasas de aprobación/reprobación
 - **Visualizaciones Interactivas**: Gráficos de barras, dispersión, pastel y líneas
 - **Sistema de Filtros**: Por período académico, mes y fechas específicas
 - **Navegación Intuitiva**: Sidebar colapsible con estados activos
 
-### 👥 Gestión de Estudiantes
+### Gestión de Estudiantes
 - **Registro de Estudiantes**: Modal completo con formulario de validación
 - **Datos Personales**: Nombre, matrícula, correo, teléfono
 - **Información Académica**: Carrera, semestre, calificaciones
 - **Validación en Tiempo Real**: Verificación de campos obligatorios
 
-### ⚠️ Análisis de Factores de Riesgo
+### Análisis de Factores de Riesgo
 - **Identificación Automática**: Algoritmos para detectar estudiantes en riesgo
 - **Métricas de Riesgo**: Asistencia, calificaciones, comportamiento
 - **Alertas Tempranas**: Notificaciones para intervención oportuna
 - **Reportes Detallados**: Análisis individual y grupal
 
-### 📤 Exportación de Datos
+### Exportación de Datos
 - **Múltiples Formatos**: Excel (.xlsx), CSV, PDF
 - **Filtros Personalizables**: Selección de datos específicos
 - **Exportación de Gráficos**: Captura de visualizaciones como imágenes
 - **Plantillas Predefinidas**: Formatos estándar para diferentes usos
 - **Descarga Directa**: Generación y descarga de archivos en el cliente
 
-### 📥 Importación de Datos
+### Importación de Datos
 - **Importación Masiva**: Carga de estudiantes desde archivos Excel/CSV
 - **Validación de Datos**: Verificación en tiempo real durante importación
 - **Plantillas Descargables**: Plantillas Excel y CSV disponibles
 - **Manejo de Errores**: Reporte detallado de errores de importación
 - **Procesamiento Asíncrono**: Soporte para archivos grandes
 
-### 🌙 Modo Oscuro/Claro
+### Modo Oscuro/Claro
 - **Toggle Intuitivo**: Cambio fácil entre temas
 - **Persistencia**: Preferencias guardadas en localStorage
 - **Detección Automática**: Respeta preferencias del sistema
 - **Transiciones Suaves**: Animaciones fluidas entre temas
 
-### 🔔 Sistema de Notificaciones
+### Sistema de Notificaciones
 - **Notificaciones Toast**: Alertas no intrusivas
 - **Múltiples Tipos**: Éxito, error, advertencia, información
 - **Auto-cierre**: Desaparición automática configurable
 - **Gestión Centralizada**: Control global de notificaciones
 
-## 🔧 Arquitectura de Componentes
+## Arquitectura de Componentes
 
 ### Principios de Diseño Aplicados
 
@@ -222,7 +222,7 @@ src/
 - **`useRiskFactors.js`**: Análisis de factores de riesgo
 - **`useExportData.js`**: Funcionalidades de exportación
 
-## 🎨 Sistema de Estilos
+## Sistema de Estilos
 
 ### Organización CSS Modular
 - **`dashboard.css`**: Estilos del layout principal
@@ -242,7 +242,7 @@ src/
 - **Paleta de Colores**: Azules profesionales con acentos
 - **Notificaciones Toast**: Estilos modernos para alertas
 
-## 🔄 Gestión de Estado
+## Gestión de Estado
 
 ### Stores de Pinia
 
@@ -261,7 +261,7 @@ src/
 - **Configuración global**: Temas, preferencias y configuración
 - **Estado de la aplicación**: Variables globales del sistema
 
-## 📱 Responsive Design
+## Responsive Design
 
 ### Breakpoints
 - **Desktop**: 1200px+
@@ -274,7 +274,7 @@ src/
 - Modales optimizados para pantallas pequeñas
 - Controles de filtro apilados verticalmente
 
-## 🚀 Instrucciones de Uso
+## Instrucciones de Uso
 
 ### 1. Inicio de Sesión
 - **Credenciales demo**: 
@@ -306,7 +306,7 @@ src/
 - **Validación**: El sistema valida automáticamente los datos
 - **Confirmación**: Revisar resultados de importación antes de confirmar
 
-## 🧪 Desarrollo
+## Desarrollo
 
 ### Comandos Disponibles
 ```bash
@@ -340,7 +340,7 @@ npm run preview
 - **Prettier**: Formateo consistente del código
 - **Auto-imports**: Importación automática de composables de Vue
 
-## 🔧 Configuración para Backend
+## Configuración para Backend
 
 ### Proxy de Desarrollo
 - Las peticiones a `/api` se redirigen al backend en puerto 3001
@@ -354,7 +354,7 @@ npm run preview
 - Redirección automática a login en caso de token expirado
 - Base URL configurada para el proxy de desarrollo
 
-## 🤝 Contribución
+## Contribución
 
 ### Estándares de Código
 - **ESLint**: Configuración estricta para calidad de código
@@ -368,10 +368,10 @@ npm run preview
 3. Code review obligatorio
 4. Merge a main tras aprobación
 
-## 📄 Licencia
+## Licencia
 
 Este proyecto es parte del curso de Temas Avanzados de Desarrollo de Software.
 
 ---
 
-**Desarrollado con ❤️ usando Vue.js 3, Composition API y las mejores prácticas de desarrollo frontend moderno.**
+**Desarrollado usando Vue.js 3, Composition API y las mejores prácticas de desarrollo frontend moderno.**

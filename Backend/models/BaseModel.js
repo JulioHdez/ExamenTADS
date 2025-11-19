@@ -10,6 +10,7 @@ class BaseModel {
     getIdColumnName() {
         const idColumns = {
             'docentes': 'id_docente',
+            'profesores': 'id_profesor',
             'estudiantes': 'id_estudiante',
             'carreras': 'id_carrera',
             'materias': 'id_materia',
