@@ -30,40 +30,6 @@
             </transition>
           </a>
         </li>
-
-        <!-- ACCESIBILIDAD: Escala de grises -->
-        <li class="nav-item" @click="toggleGreyMode">
-          <a class="nav-link" href="#">
-            <span class="nav-icon">🌓</span>
-            <transition name="fade">
-              <span v-if="isExpanded" class="nav-text">Escala de grises</span>
-            </transition>
-            <input
-              type="checkbox"
-              class="accessibility-toggle"
-              :checked="isGreyMode"
-              @click.stop="toggleGreyMode"
-              aria-label="Activar escala de grises"
-            />
-          </a>
-        </li>
-
-        <!-- ACCESIBILIDAD: Lectura en voz alta -->
-        <li class="nav-item" @click="toggleVoiceReader">
-          <a class="nav-link" href="#">
-            <span class="nav-icon">🔊</span>
-            <transition name="fade">
-              <span v-if="isExpanded" class="nav-text">Lectura en voz alta</span>
-            </transition>
-            <input
-              type="checkbox"
-              class="accessibility-toggle"
-              :checked="isVoiceReader"
-              @click.stop="toggleVoiceReader"
-              aria-label="Activar lectura en voz alta"
-            />
-          </a>
-        </li>
       </ul>
     </nav>
 
@@ -135,99 +101,6 @@ const setActiveItem = (itemId) => {
   emit('update:activeItem', itemId);
 };
 
-/* ---------- Escala de grises ---------- */
-const isGreyMode = ref(localStorage.getItem("grey-mode") === "true");
-
-watchEffect(() => {
-  // Mantener otros posibles filtros: aquí reemplazamos sólo el filtro global.
-  if (isGreyMode.value) {
-    document.body.style.filter = "grayscale(100%)";
-  } else {
-    // quitar sólo el filtro (no tocar otros estilos)
-    // si otras partes usan filter, podrías extender esto. Por ahora regresamos a none.
-    document.body.style.filter = "";
-  }
-});
-
-const toggleGreyMode = () => {
-  isGreyMode.value = !isGreyMode.value;
-  localStorage.setItem("grey-mode", isGreyMode.value);
-};
-
-/* ---------- Lector de pantalla (hover) ---------- */
-const isVoiceReader = ref(localStorage.getItem("voice-reader") === "true");
-
-const speak = (text) => {
-  if (!window.speechSynthesis || !isVoiceReader.value) return;
-  // evitar leer cosas demasiado largas o repetidas:
-  if (!text || text.length > 400) return;
-
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = "es-MX";
-  utter.rate = 1;
-  utter.pitch = 1;
-
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(utter);
-};
-
-let _hoverHandler = null;
-
-const enableGlobalHoverReader = () => {
-  // guardamos handler para poder removerlo después
-  _hoverHandler = (e) => {
-    if (!isVoiceReader.value) return;
-
-    const el = e.target;
-
-    // No leer inputs editables mientras el usuario escribe
-    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable) return;
-
-    const text = (el.innerText || el.alt || el.title || '').trim();
-
-    if (!text || text.length < 2) return;
-
-    // evitar lecturas repetidas inmediatas
-    const last = el.dataset.lastRead;
-    if (last === text) return;
-    el.dataset.lastRead = text;
-
-    speak(text);
-  };
-
-  document.body.addEventListener("mouseover", _hoverHandler, { passive: true });
-};
-
-const disableGlobalHoverReader = () => {
-  if (_hoverHandler) {
-    document.body.removeEventListener("mouseover", _hoverHandler);
-    _hoverHandler = null;
-  }
-};
-
-onMounted(() => {
-  // Si venía activado desde localStorage, lo iniciamos
-  if (isVoiceReader.value) {
-    enableGlobalHoverReader();
-  }
-});
-
-onBeforeUnmount(() => {
-  disableGlobalHoverReader();
-});
-
-const toggleVoiceReader = () => {
-  isVoiceReader.value = !isVoiceReader.value;
-  localStorage.setItem("voice-reader", isVoiceReader.value);
-
-  if (isVoiceReader.value) {
-    enableGlobalHoverReader();
-  } else {
-    disableGlobalHoverReader();
-    window.speechSynthesis.cancel();
-  }
-};
-
 /* ---------- Logout ---------- */
 const handleLogout = async () => {
   try {
@@ -259,10 +132,6 @@ const handleLogout = async () => {
   width: calc(250px * var(--zoom-scale, 1));
 }
 
-/* Cuando está colapsado, ocultamos los toggles (checkbox) */
-.sidebar-collapsed .accessibility-toggle {
-  display: none !important;
-}
 
 .sidebar-header {
   padding: 1.5rem 1rem;

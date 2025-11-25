@@ -30,6 +30,22 @@ const emit = defineEmits(['dataPointSelection'])
 const isDarkMode = ref(false)
 const chartRef = ref(null)
 
+// Función para manejar la selección de puntos de datos
+const handleDataPointSelection = (event, chartContext, config) => {
+  const dataPointIndex = config.dataPointIndex
+  const selectedItem = props.data[dataPointIndex]
+  
+  if (selectedItem) {
+    emit('dataPointSelection', {
+      chartType: 'pie',
+      category: selectedItem.status,
+      value: selectedItem.count,
+      percentage: selectedItem.percentage,
+      dataPointIndex
+    })
+  }
+}
+
 // Detectar el modo oscuro
 onMounted(() => {
   isDarkMode.value = document.documentElement.classList.contains('dark')

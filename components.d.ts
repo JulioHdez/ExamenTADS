@@ -7,6 +7,7 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    AccessibilityMenu: typeof import('./src/components/ui/AccessibilityMenu.vue')['default']
     BarChart: typeof import('./src/components/charts/BarChart.vue')['default']
     BarChartApex: typeof import('./src/components/charts/BarChartApex.vue')['default']
     BaseModal: typeof import('./src/components/modals/BaseModal.vue')['default']

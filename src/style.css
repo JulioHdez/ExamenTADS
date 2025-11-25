@@ -217,3 +217,103 @@ body {
     flex-direction: row;
   }
 }
+
+/* Tamaño del cursor personalizable */
+:root {
+  --cursor-size: auto;
+}
+
+/* Función para generar cursor SVG dinámico */
+body.cursor-large *,
+body.cursor-large *::before,
+body.cursor-large *::after {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="none" stroke="%23000" stroke-width="2"/><circle cx="16" cy="16" r="2" fill="%23000"/></svg>') 16 16, auto !important;
+}
+
+body.cursor-extra-large *,
+body.cursor-extra-large *::before,
+body.cursor-extra-large *::after {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="%23000" stroke-width="3"/><circle cx="24" cy="24" r="3" fill="%23000"/></svg>') 24 24, auto !important;
+}
+
+/* Cursor personalizado basado en variable CSS */
+body.cursor-custom *,
+body.cursor-custom *::before,
+body.cursor-custom *::after {
+  cursor: var(--cursor-url, auto) !important;
+}
+
+/* Cursor para elementos clickeables con cursor personalizado */
+body.cursor-custom a,
+body.cursor-custom button,
+body.cursor-custom [role="button"],
+body.cursor-custom input[type="button"],
+body.cursor-custom input[type="submit"],
+body.cursor-custom input[type="checkbox"],
+body.cursor-custom input[type="radio"],
+body.cursor-custom select,
+body.cursor-custom label {
+  cursor: var(--cursor-url, pointer) !important;
+}
+
+/* Cursor para elementos clickeables */
+body.cursor-large a,
+body.cursor-large button,
+body.cursor-large [role="button"],
+body.cursor-large input[type="button"],
+body.cursor-large input[type="submit"],
+body.cursor-large input[type="checkbox"],
+body.cursor-large input[type="radio"],
+body.cursor-large select,
+body.cursor-large label {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="none" stroke="%23000" stroke-width="2"/><circle cx="16" cy="16" r="2" fill="%23000"/></svg>') 16 16, pointer !important;
+}
+
+body.cursor-extra-large a,
+body.cursor-extra-large button,
+body.cursor-extra-large [role="button"],
+body.cursor-extra-large input[type="button"],
+body.cursor-extra-large input[type="submit"],
+body.cursor-extra-large input[type="checkbox"],
+body.cursor-extra-large input[type="radio"],
+body.cursor-extra-large select,
+body.cursor-extra-large label {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="%23000" stroke-width="3"/><circle cx="24" cy="24" r="3" fill="%23000"/></svg>') 24 24, pointer !important;
+}
+
+/* Cursor para modo oscuro */
+.dark body.cursor-large *,
+.dark body.cursor-large *::before,
+.dark body.cursor-large *::after {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="none" stroke="%23fff" stroke-width="2"/><circle cx="16" cy="16" r="2" fill="%23fff"/></svg>') 16 16, auto !important;
+}
+
+.dark body.cursor-extra-large *,
+.dark body.cursor-extra-large *::before,
+.dark body.cursor-extra-large *::after {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="%23fff" stroke-width="3"/><circle cx="24" cy="24" r="3" fill="%23fff"/></svg>') 24 24, auto !important;
+}
+
+.dark body.cursor-large a,
+.dark body.cursor-large button,
+.dark body.cursor-large [role="button"],
+.dark body.cursor-large input[type="button"],
+.dark body.cursor-large input[type="submit"],
+.dark body.cursor-large input[type="checkbox"],
+.dark body.cursor-large input[type="radio"],
+.dark body.cursor-large select,
+.dark body.cursor-large label {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="none" stroke="%23fff" stroke-width="2"/><circle cx="16" cy="16" r="2" fill="%23fff"/></svg>') 16 16, pointer !important;
+}
+
+.dark body.cursor-extra-large a,
+.dark body.cursor-extra-large button,
+.dark body.cursor-extra-large [role="button"],
+.dark body.cursor-extra-large input[type="button"],
+.dark body.cursor-extra-large input[type="submit"],
+.dark body.cursor-extra-large input[type="checkbox"],
+.dark body.cursor-extra-large input[type="radio"],
+.dark body.cursor-extra-large select,
+.dark body.cursor-extra-large label {
+  cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="none" stroke="%23fff" stroke-width="3"/><circle cx="24" cy="24" r="3" fill="%23fff"/></svg>') 24 24, pointer !important;
+}

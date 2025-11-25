@@ -7,15 +7,8 @@
       @sidebar-toggle="handleSidebarToggle"
     />
     
-    <!-- Controles de Accesibilidad - Fuera del sidebar -->
-    <div class="accessibility-controls">
-      <div class="zoom-controls-wrapper">
-        <ZoomControls />
-      </div>
-      <div class="dark-mode-toggle">
-        <DarkModeToggle />
-      </div>
-    </div>
+    <!-- Menú de Accesibilidad -->
+    <AccessibilityMenu />
     
     <div class="main-content" :class="{ 'sidebar-expanded': isSidebarExpanded }">
       <div class="dashboard-header">
@@ -118,8 +111,7 @@ import IshikawaFullscreen from '@/components/modals/IshikawaFullscreen.vue'
 import HistogramModal from '@/components/modals/HistogramModal.vue'
 import DispersionModal from '@/components/modals/DispersionModal.vue'
 import MoreInfoModal from '@/components/modals/MoreInfoModal.vue'
-import DarkModeToggle from '@/components/ui/DarkModeToggle.vue'
-import ZoomControls from '@/components/ui/ZoomControls.vue'
+import AccessibilityMenu from '@/components/ui/AccessibilityMenu.vue'
 import { useDashboardData } from '@/composables/useDashboardData'
 
 // Sidebar state
@@ -289,29 +281,6 @@ onMounted(() => {
 @import '@/styles/dashboard.css';
 @import '@/styles/components.css';
 
-.accessibility-controls {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  z-index: 10001;
-  display: flex;
-  flex-direction: row;
-  gap: 0.75rem;
-  align-items: center;
-  pointer-events: none;
-}
-
-.accessibility-controls > * {
-  pointer-events: auto;
-}
-
-.dark-mode-toggle {
-  /* Mantener estilos existentes */
-}
-
-.zoom-controls-wrapper {
-  /* El componente ZoomControls ya tiene sus propios estilos */
-}
 
 .main-content {
   margin-left: calc(60px * var(--zoom-scale, 1));
