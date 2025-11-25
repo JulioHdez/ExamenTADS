@@ -1,4 +1,5 @@
 import { ref, computed, watch } from 'vue'
+import { useAccessibilityPreferences } from './useAccessibilityPreferences'
 
 // Estado global del zoom (porcentaje, 100 = 100%)
 const zoomLevel = ref(100)
@@ -11,6 +12,8 @@ const MAX_ZOOM = 200 // 200%
 const ZOOM_STEP = 10 // Incremento/decremento en 10%
 
 export function useZoom() {
+  const { updatePreference } = useAccessibilityPreferences()
+  
   // Inicializar solo una vez
   if (!initialized && typeof window !== 'undefined' && typeof document !== 'undefined') {
     initialized = true

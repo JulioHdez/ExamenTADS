@@ -1,4 +1,5 @@
 import { ref, watch } from 'vue'
+import { useAccessibilityPreferences } from './useAccessibilityPreferences'
 
 const isTextHighlightEnabled = ref(
   typeof window !== 'undefined' 
@@ -77,6 +78,8 @@ const applyTextHighlight = (enabled) => {
 }
 
 export const useTextHighlight = () => {
+  const { updatePreference } = useAccessibilityPreferences()
+  
   // Inicializar resaltado de texto solo cuando se use el composable
   if (typeof window !== 'undefined') {
     // Aplicar el estado guardado al cargar
@@ -90,9 +93,18 @@ export const useTextHighlight = () => {
     }
     
     // Observar cambios en el estado
-    watch(isTextHighlightEnabled, (newValue) => {
+    watch(isTextHighlightEnabled, async (newValue) => {
       if (document.body) {
         applyTextHighlight(newValue)
+        
+        // Guardar en backend si está autenticado
+        try {
+          await updatePreference('textHighlight', newValue)
+        } catch (error) {
+          console.warn('Error al guardar resaltado de texto en backend:', error)
+        }
+        
+        // También guardar en localStorage como backup
         if (typeof window !== 'undefined') {
           localStorage.setItem('text-highlight-enabled', newValue.toString())
         }

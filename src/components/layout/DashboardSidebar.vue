@@ -105,9 +105,12 @@ const setActiveItem = (itemId) => {
 const handleLogout = async () => {
   try {
     await authStore.logout();
-    router.push('/');
+    // Forzar recarga completa de la página para limpiar todo el estado
+    window.location.href = '/';
   } catch (error) {
     console.error('Error al cerrar sesión:', error);
+    // Aún así, forzar recarga para limpiar el estado
+    window.location.href = '/';
   }
 };
 </script>

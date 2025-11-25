@@ -1,4 +1,5 @@
 import { ref, watch, computed } from 'vue'
+import { useAccessibilityPreferences } from './useAccessibilityPreferences'
 
 // Tamaño del cursor en porcentaje (100% = tamaño normal)
 const cursorSizePercentage = ref(
@@ -56,6 +57,8 @@ const applyCursorSize = (percentage) => {
 }
 
 export const useCursorSize = () => {
+  const { updatePreference } = useAccessibilityPreferences()
+  
   // Inicializar tamaño del cursor solo cuando se use el composable
   if (typeof window !== 'undefined' && document.body) {
     // Aplicar el tamaño guardado al cargar
@@ -68,9 +71,18 @@ export const useCursorSize = () => {
     }
     
     // Observar cambios en el tamaño del cursor
-    watch(cursorSizePercentage, (newPercentage) => {
+    watch(cursorSizePercentage, async (newPercentage) => {
       if (document.body) {
         applyCursorSize(newPercentage)
+        
+        // Guardar en backend si está autenticado
+        try {
+          await updatePreference('cursorSize', newPercentage)
+        } catch (error) {
+          console.warn('Error al guardar tamaño de cursor en backend:', error)
+        }
+        
+        // También guardar en localStorage como backup
         if (typeof window !== 'undefined') {
           localStorage.setItem('cursor-size-percentage', newPercentage.toString())
         }

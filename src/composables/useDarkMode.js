@@ -1,4 +1,5 @@
 import { ref, computed, watch } from 'vue'
+import { useAccessibilityPreferences } from './useAccessibilityPreferences'
 
 // Estado global del modo oscuro
 const isDarkMode = ref(false)
@@ -6,6 +7,8 @@ let initialized = false
 let watcher = null
 
 export function useDarkMode() {
+  const { updatePreference } = useAccessibilityPreferences()
+  
   // Inicializar solo una vez
   if (!initialized && typeof window !== 'undefined' && typeof document !== 'undefined') {
     initialized = true
@@ -21,32 +24,52 @@ export function useDarkMode() {
       }
     }
 
-    // Guardar preferencia en localStorage
-    const saveThemePreference = () => {
-      if (typeof window === 'undefined' || !localStorage) return
+    // Guardar preferencia (backend si está autenticado, localStorage si no)
+    const saveThemePreference = async () => {
+      if (typeof window === 'undefined') return
       
       try {
-        localStorage.setItem('darkMode', JSON.stringify(isDarkMode.value))
+        // Intentar guardar en backend
+        await updatePreference('darkMode', isDarkMode.value)
+        
+        // También guardar en localStorage como backup
+        if (localStorage) {
+          localStorage.setItem('darkMode', JSON.stringify(isDarkMode.value))
+        }
       } catch (error) {
         console.warn('Error al guardar preferencia de tema:', error)
+        // Fallback a localStorage
+        if (localStorage) {
+          try {
+            localStorage.setItem('darkMode', JSON.stringify(isDarkMode.value))
+          } catch (e) {
+            console.warn('Error al guardar en localStorage:', e)
+          }
+        }
       }
     }
 
-    // Inicializar desde localStorage
+    // Inicializar desde localStorage (no desde backend en la inicialización)
+    // El backend se carga cuando el usuario inicia sesión desde App.vue
     const initializeDarkMode = () => {
-      if (typeof window === 'undefined' || !localStorage || !document.documentElement) return
+      if (typeof window === 'undefined' || !document.documentElement) return
       
       try {
-        const savedTheme = localStorage.getItem('darkMode')
-        if (savedTheme !== null) {
-          isDarkMode.value = JSON.parse(savedTheme)
-        } else {
-          // Detectar preferencia del sistema
-          if (window.matchMedia) {
-            isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches
+        // Cargar desde localStorage
+        if (localStorage) {
+          const savedTheme = localStorage.getItem('darkMode')
+          if (savedTheme !== null) {
+            isDarkMode.value = JSON.parse(savedTheme)
+            applyTheme()
+            return
           }
         }
-        applyTheme()
+        
+        // Si no hay nada guardado, detectar preferencia del sistema
+        if (window.matchMedia) {
+          isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches
+          applyTheme()
+        }
       } catch (error) {
         console.warn('Error al inicializar modo oscuro:', error)
       }

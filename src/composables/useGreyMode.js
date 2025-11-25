@@ -1,10 +1,13 @@
 import { ref, watch } from "vue";
+import { useAccessibilityPreferences } from './useAccessibilityPreferences'
 
 const isGreyMode = ref(false)
 let initialized = false
 let watcher = null
 
 export function useGreyMode() {
+  const { updatePreference } = useAccessibilityPreferences()
+  
   // Inicializar solo una vez
   if (!initialized && typeof window !== 'undefined' && typeof document !== 'undefined') {
     initialized = true
@@ -37,7 +40,15 @@ export function useGreyMode() {
     }
 
     // Watch para cambios futuros (solo una vez)
-    watcher = watch(isGreyMode, (value) => {
+    watcher = watch(isGreyMode, async (value) => {
+      // Guardar en backend si está autenticado
+      try {
+        await updatePreference('greyMode', value)
+      } catch (error) {
+        console.warn('Error al guardar modo gris en backend:', error)
+      }
+      
+      // También guardar en localStorage como backup
       if (localStorage) {
         try {
           localStorage.setItem("grey-mode", value);

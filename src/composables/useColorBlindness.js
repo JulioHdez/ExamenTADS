@@ -1,4 +1,5 @@
 import { ref, watch, onMounted } from 'vue'
+import { useAccessibilityPreferences } from './useAccessibilityPreferences'
 
 const colorBlindnessType = ref(
   typeof window !== 'undefined' 
@@ -83,6 +84,8 @@ const createSVGFilters = () => {
 }
 
 export const useColorBlindness = () => {
+  const { updatePreference } = useAccessibilityPreferences()
+  
   // Inicializar filtros SVG al usar el composable
   if (typeof window !== 'undefined' && document.body) {
     createSVGFilters()
@@ -98,9 +101,18 @@ export const useColorBlindness = () => {
     }
     
     // Observar cambios en el tipo de daltonismo
-    watch(colorBlindnessType, (newType) => {
+    watch(colorBlindnessType, async (newType) => {
       if (document.body) {
         applyColorBlindnessFilter(newType)
+        
+        // Guardar en backend si está autenticado
+        try {
+          await updatePreference('colorBlindnessType', newType)
+        } catch (error) {
+          console.warn('Error al guardar tipo de daltonismo en backend:', error)
+        }
+        
+        // También guardar en localStorage como backup
         if (typeof window !== 'undefined') {
           localStorage.setItem('color-blindness-type', newType)
         }

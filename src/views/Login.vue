@@ -1,9 +1,7 @@
 <template>
   <div class="login-container">
-    <!-- Dark Mode Toggle -->
-    <div class="dark-mode-container">
-      <DarkModeToggle />
-    </div>
+    <!-- Menú de Accesibilidad -->
+    <AccessibilityMenu />
     
     <div class="login-card">
       <div class="login-header">
@@ -75,11 +73,18 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useNotifications } from '@/composables/useNotifications'
-import DarkModeToggle from '@/components/ui/DarkModeToggle.vue'
+import AccessibilityMenu from '@/components/ui/AccessibilityMenu.vue'
+import { useDarkMode } from '@/composables/useDarkMode'
+import { useZoom } from '@/composables/useZoom'
+import { useGreyMode } from '@/composables/useGreyMode'
+import { useColorBlindness } from '@/composables/useColorBlindness'
+import { useCursorSize } from '@/composables/useCursorSize'
+import { useTextHighlight } from '@/composables/useTextHighlight'
+import { useParkinsonAccessibility } from '@/composables/useParkinsonAccessibility'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -194,11 +199,11 @@ const handleLogin = async () => {
         'Has iniciado sesión correctamente'
       )
       
-      // Redireccionar según el tipo de usuario
+      // Redireccionar según el tipo de usuario y forzar recarga completa de la página
       if (result.userType === 'profesor' || authStore.isProfesor) {
-        await router.push('/profesor-dashboard')
+        window.location.href = '/profesor-dashboard'
       } else {
-        await router.push('/dashboard')
+        window.location.href = '/dashboard'
       }
       console.log('Redirección completada')
     } else {
@@ -279,6 +284,74 @@ const clearEmailError = () => {
 const togglePasswordVisibility = () => {
   showPassword.value = !showPassword.value
 }
+
+// Limpiar preferencias de accesibilidad al mostrar el login
+onMounted(() => {
+  // Resetear todas las preferencias a valores por defecto
+  const { isDarkMode, toggleDarkMode } = useDarkMode()
+  const { zoomPercentage, resetZoom } = useZoom()
+  const { isGreyMode, toggleGreyMode } = useGreyMode()
+  const { setColorBlindnessType } = useColorBlindness()
+  const { cursorSize, decreaseCursorSize, increaseCursorSize } = useCursorSize()
+  const { isTextHighlightEnabled, toggleTextHighlight } = useTextHighlight()
+  const { isParkinsonModeEnabled, toggleParkinsonMode } = useParkinsonAccessibility()
+  
+  // Resetear a valores por defecto
+  if (isDarkMode.value) {
+    toggleDarkMode()
+  }
+  
+  if (zoomPercentage.value !== '100%') {
+    resetZoom()
+  }
+  
+  if (isGreyMode.value) {
+    toggleGreyMode()
+  }
+  
+  setColorBlindnessType('none')
+  
+  // Resetear cursor size a 100% (ajustar directamente)
+  const currentCursorSize = cursorSize.value
+  if (currentCursorSize > 100) {
+    const steps = Math.ceil((currentCursorSize - 100) / 25)
+    for (let i = 0; i < steps; i++) {
+      decreaseCursorSize()
+    }
+  } else if (currentCursorSize < 100) {
+    const steps = Math.ceil((100 - currentCursorSize) / 25)
+    for (let i = 0; i < steps; i++) {
+      increaseCursorSize()
+    }
+  }
+  
+  if (isTextHighlightEnabled.value) {
+    toggleTextHighlight()
+  }
+  
+  if (isParkinsonModeEnabled.value) {
+    toggleParkinsonMode()
+  }
+  
+  // Limpiar posición del menú y preferencias de localStorage
+  if (typeof window !== 'undefined' && localStorage) {
+    try {
+      localStorage.removeItem('accessibility-menu-position-x')
+      localStorage.removeItem('accessibility-menu-position-y')
+      // También limpiar otras preferencias de accesibilidad
+      localStorage.removeItem('darkMode')
+      localStorage.removeItem('zoomLevel')
+      localStorage.removeItem('greyMode')
+      localStorage.removeItem('color-blindness-type')
+      localStorage.removeItem('cursor-size-percentage')
+      localStorage.removeItem('text-highlight-enabled')
+      localStorage.removeItem('parkinson-mode-enabled')
+      localStorage.removeItem('voice-reader')
+    } catch (error) {
+      console.warn('Error al limpiar preferencias:', error)
+    }
+  }
+})
 </script>
 
 <style scoped>
@@ -293,13 +366,6 @@ const togglePasswordVisibility = () => {
   transition: background 0.3s ease;
 }
 
-/* Dark mode container */
-.dark-mode-container {
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
-  z-index: 10;
-}
 
 /* Dark mode styles */
 .dark .login-container {

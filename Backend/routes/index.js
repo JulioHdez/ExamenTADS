@@ -13,6 +13,7 @@ const paretoRoutes = require('./pareto');
 const exportRoutes = require('./export');
 const importRoutes = require('./import');
 const profesoresRoutes = require('./profesores');
+const preferenciasRoutes = require('./preferencias');
 
 // Configurar rutas
 router.use('/carreras', carrerasRoutes);
@@ -26,6 +27,7 @@ router.use('/pareto', paretoRoutes);
 router.use('/export', exportRoutes);
 router.use('/import', importRoutes);
 router.use('/profesores', profesoresRoutes);
+router.use('/preferencias', preferenciasRoutes);
 
 // Ruta de salud del API
 router.get('/health', (req, res) => {
