@@ -55,25 +55,28 @@ const applyCursorSize = (percentage) => {
   }
 }
 
-// Inicializar tamaño del cursor
-if (typeof window !== 'undefined') {
-  // Aplicar el tamaño guardado al cargar
-  if (cursorSizePercentage.value !== 100) {
-    setTimeout(() => {
-      applyCursorSize(cursorSizePercentage.value)
-    }, 100)
-  }
-  
-  // Observar cambios en el tamaño del cursor
-  watch(cursorSizePercentage, (newPercentage) => {
-    applyCursorSize(newPercentage)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('cursor-size-percentage', newPercentage.toString())
-    }
-  })
-}
-
 export const useCursorSize = () => {
+  // Inicializar tamaño del cursor solo cuando se use el composable
+  if (typeof window !== 'undefined' && document.body) {
+    // Aplicar el tamaño guardado al cargar
+    if (cursorSizePercentage.value !== 100) {
+      setTimeout(() => {
+        if (document.body) {
+          applyCursorSize(cursorSizePercentage.value)
+        }
+      }, 100)
+    }
+    
+    // Observar cambios en el tamaño del cursor
+    watch(cursorSizePercentage, (newPercentage) => {
+      if (document.body) {
+        applyCursorSize(newPercentage)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('cursor-size-percentage', newPercentage.toString())
+        }
+      }
+    })
+  }
   const cursorSize = computed(() => cursorSizePercentage.value)
   const cursorSizeDisplay = computed(() => `${cursorSizePercentage.value}%`)
   

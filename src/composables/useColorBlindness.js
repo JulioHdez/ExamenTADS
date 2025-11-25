@@ -32,6 +32,8 @@ const applyColorBlindnessFilter = (type) => {
 
 // Crear los filtros SVG necesarios
 const createSVGFilters = () => {
+  if (typeof window === 'undefined' || !document.body) return
+  
   // Verificar si ya existen los filtros
   if (document.getElementById('color-blindness-filters')) {
     return
@@ -81,23 +83,27 @@ const createSVGFilters = () => {
 }
 
 export const useColorBlindness = () => {
-  // Inicializar filtros SVG al montar
-  if (typeof window !== 'undefined') {
+  // Inicializar filtros SVG al usar el composable
+  if (typeof window !== 'undefined' && document.body) {
     createSVGFilters()
     
     // Aplicar el filtro guardado al cargar
     if (colorBlindnessType.value !== 'none') {
-      // Usar setTimeout para asegurar que el DOM esté listo
+      // Usar setTimeout para asegurar que el DOM esté completamente listo
       setTimeout(() => {
-        applyColorBlindnessFilter(colorBlindnessType.value)
+        if (document.body) {
+          applyColorBlindnessFilter(colorBlindnessType.value)
+        }
       }, 100)
     }
     
     // Observar cambios en el tipo de daltonismo
     watch(colorBlindnessType, (newType) => {
-      applyColorBlindnessFilter(newType)
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('color-blindness-type', newType)
+      if (document.body) {
+        applyColorBlindnessFilter(newType)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('color-blindness-type', newType)
+        }
       }
     })
   }

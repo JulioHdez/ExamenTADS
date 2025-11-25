@@ -25,186 +25,99 @@
       </svg>
     </button>
 
-    <!-- Menú desplegable -->
-    <Transition name="menu">
+    <!-- Menú circular radial -->
+    <Transition name="radial-menu">
       <div 
         v-if="isOpen" 
-        class="accessibility-menu" 
-        :class="{ 'menu-left': isMenuOnLeft, 'menu-top': isMenuOnTop }"
+        class="radial-menu-container"
         @click.stop
       >
-        <div class="menu-header">
-          <h3 class="menu-title">Accesibilidad</h3>
-          <button @click="toggleMenu" class="close-button" aria-label="Cerrar menú">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
+        <!-- Opciones distribuidas en círculo -->
+        <!-- Zoom -->
+        <button
+          v-for="(option, index) in radialOptions"
+          :key="option.id"
+          class="radial-menu-item"
+          :class="{ 'active': option.isActive }"
+          :style="getRadialPosition(index)"
+          @click="handleRadialOptionClick(option)"
+          :title="option.title"
+          :aria-label="option.title"
+        >
+          <span class="radial-icon">{{ option.icon }}</span>
+          <span class="radial-label" v-if="option.showLabel">{{ option.label }}</span>
+        </button>
 
-        <div class="menu-content">
-          <!-- Control de Zoom -->
-          <div class="menu-item">
-            <div class="menu-item-header">
-              <span class="menu-item-icon">🔍</span>
-              <span class="menu-item-label">Zoom</span>
-            </div>
-            <div class="zoom-controls-inline">
-              <button
-                @click="zoomOut"
-                class="zoom-btn"
-                :disabled="!canZoomOut"
-                :title="`Disminuir zoom (${zoomPercentage})`"
-                aria-label="Disminuir zoom"
-              >
+        <!-- Submenú para opciones con controles -->
+        <Transition name="submenu">
+          <div v-if="activeSubmenu" class="radial-submenu" :style="getSubmenuPosition()">
+            <div class="submenu-header">
+              <span class="submenu-title">{{ activeSubmenu.title }}</span>
+              <button @click="closeSubmenu" class="submenu-close" aria-label="Cerrar">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5H6" />
-                </svg>
-              </button>
-              <span class="zoom-level-display">{{ zoomPercentage }}</span>
-              <button
-                @click="zoomIn"
-                class="zoom-btn"
-                :disabled="!canZoomIn"
-                :title="`Aumentar zoom (${zoomPercentage})`"
-                aria-label="Aumentar zoom"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
             </div>
-          </div>
+            <div class="submenu-content">
+              <!-- Contenido del submenú según el tipo -->
+              <template v-if="activeSubmenu.id === 'zoom'">
+                <div class="submenu-controls">
+                  <button @click="zoomOut" class="submenu-btn" :disabled="!canZoomOut" aria-label="Disminuir zoom">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5H6" />
+                    </svg>
+                  </button>
+                  <span class="submenu-value">{{ zoomPercentage }}</span>
+                  <button @click="zoomIn" class="submenu-btn" :disabled="!canZoomIn" aria-label="Aumentar zoom">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                    </svg>
+                  </button>
+                </div>
+              </template>
 
-          <!-- Modo Oscuro/Claro -->
-          <div class="menu-item">
-            <div class="menu-item-header">
-              <span class="menu-item-icon">{{ isDarkMode ? '🌙' : '☀️' }}</span>
-              <span class="menu-item-label">Modo {{ isDarkMode ? 'Oscuro' : 'Claro' }}</span>
-            </div>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                :checked="isDarkMode"
-                @change="toggleDarkMode"
-                aria-label="Cambiar modo oscuro/claro"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
+              <template v-else-if="activeSubmenu.id === 'cursor'">
+                <div class="submenu-controls">
+                  <button @click="decreaseCursorSize" class="submenu-btn" :disabled="!canDecreaseCursor" aria-label="Disminuir tamaño">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5H6" />
+                    </svg>
+                  </button>
+                  <span class="submenu-value">{{ cursorSizeDisplay }}</span>
+                  <button @click="increaseCursorSize" class="submenu-btn" :disabled="!canIncreaseCursor" aria-label="Aumentar tamaño">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                    </svg>
+                  </button>
+                </div>
+              </template>
 
-          <!-- Escala de Grises -->
-          <div class="menu-item">
-            <div class="menu-item-header">
-              <span class="menu-item-icon">🌓</span>
-              <span class="menu-item-label">Escala de grises</span>
-            </div>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                :checked="isGreyMode"
-                @change="toggleGreyMode"
-                aria-label="Activar escala de grises"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-
-          <!-- Daltonismo -->
-          <div class="menu-item">
-            <div class="menu-item-header">
-              <span class="menu-item-icon">🎨</span>
-              <span class="menu-item-label">Daltonismo</span>
-            </div>
-            <select
-              :value="colorBlindnessType"
-              @change="handleColorBlindnessChange"
-              class="color-blindness-select"
-              aria-label="Seleccionar tipo de daltonismo"
-            >
-              <option
-                v-for="type in colorBlindnessTypes"
-                :key="type.value"
-                :value="type.value"
-              >
-                {{ type.label }}
-              </option>
-            </select>
-          </div>
-
-          <!-- Tamaño del Puntero -->
-          <div class="menu-item">
-            <div class="menu-item-header">
-              <span class="menu-item-icon">🖱️</span>
-              <span class="menu-item-label">Tamaño del puntero</span>
-            </div>
-            <div class="zoom-controls-inline">
-              <button
-                @click="decreaseCursorSize"
-                class="zoom-btn"
-                :disabled="!canDecreaseCursor"
-                :title="`Disminuir tamaño del puntero (${cursorSizeDisplay})`"
-                aria-label="Disminuir tamaño del puntero"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5H6" />
-                </svg>
-              </button>
-              <span class="zoom-level-display">{{ cursorSizeDisplay }}</span>
-              <button
-                @click="increaseCursorSize"
-                class="zoom-btn"
-                :disabled="!canIncreaseCursor"
-                :title="`Aumentar tamaño del puntero (${cursorSizeDisplay})`"
-                aria-label="Aumentar tamaño del puntero"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
-                </svg>
-              </button>
+              <template v-else-if="activeSubmenu.id === 'colorBlindness'">
+                <select
+                  :value="colorBlindnessType"
+                  @change="handleColorBlindnessChange"
+                  class="submenu-select"
+                  aria-label="Seleccionar tipo de daltonismo"
+                >
+                  <option
+                    v-for="type in colorBlindnessTypes"
+                    :key="type.value"
+                    :value="type.value"
+                  >
+                    {{ type.label }}
+                  </option>
+                </select>
+              </template>
             </div>
           </div>
-
-          <!-- Resaltado de Texto -->
-          <div class="menu-item">
-            <div class="menu-item-header">
-              <span class="menu-item-icon">📖</span>
-              <span class="menu-item-label">Resaltar texto al pasar el cursor</span>
-            </div>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                :checked="isTextHighlightEnabled"
-                @change="toggleTextHighlight"
-                aria-label="Activar resaltado de texto al pasar el cursor"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-
-          <!-- Lectura en Voz Alta -->
-          <div class="menu-item">
-            <div class="menu-item-header">
-              <span class="menu-item-icon">🔊</span>
-              <span class="menu-item-label">Lectura en voz alta</span>
-            </div>
-            <label class="toggle-switch">
-              <input
-                type="checkbox"
-                :checked="isVoiceReader"
-                @change="toggleVoiceReader"
-                aria-label="Activar lectura en voz alta"
-              />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-        </div>
+        </Transition>
       </div>
     </Transition>
 
     <!-- Overlay para cerrar al hacer clic fuera (sin desenfoque) -->
     <Transition name="overlay">
-      <div v-if="isOpen" class="menu-overlay" @click="toggleMenu"></div>
+      <div v-if="isOpen" class="menu-overlay" @click="handleOverlayClick"></div>
     </Transition>
   </div>
 </template>
@@ -217,6 +130,7 @@ import { useGreyMode } from '@/composables/useGreyMode'
 import { useColorBlindness } from '@/composables/useColorBlindness'
 import { useCursorSize } from '@/composables/useCursorSize'
 import { useTextHighlight } from '@/composables/useTextHighlight'
+import { useParkinsonAccessibility } from '@/composables/useParkinsonAccessibility'
 
 const isOpen = ref(false)
 const isDragging = ref(false)
@@ -227,11 +141,30 @@ const windowHeight = ref(typeof window !== 'undefined' ? window.innerHeight : 80
 
 // Calcular si el menú debe estar a la izquierda o derecha
 const isMenuOnLeft = computed(() => {
+  if (typeof window === 'undefined') return false
+  
   const buttonSize = 64
-  const menuWidth = 320
-  const buttonCenterX = window.innerWidth - position.x - buttonSize / 2
-  // Si el botón está en la mitad izquierda de la pantalla, mostrar menú a la derecha
-  return buttonCenterX < window.innerWidth / 2
+  const menuWidth = 280
+  const gap = 16
+  const minSpace = 10 // Espacio mínimo desde los bordes
+  const buttonRight = window.innerWidth - position.x
+  const buttonLeft = position.x + buttonSize
+  
+  // Calcular espacio disponible a la izquierda y derecha del botón
+  const spaceOnRight = buttonRight - buttonSize - gap - minSpace
+  const spaceOnLeft = buttonLeft - buttonSize - gap - minSpace
+  
+  // Si hay más espacio a la izquierda, mostrar menú a la izquierda
+  // Pero también considerar si el menú cabe en cada lado
+  if (spaceOnRight >= menuWidth) {
+    return false // Hay espacio a la derecha, mostrar ahí
+  } else if (spaceOnLeft >= menuWidth) {
+    return true // Hay espacio a la izquierda, mostrar ahí
+  } else {
+    // Si no cabe en ningún lado, elegir el lado con más espacio
+    // El menú se ajustará para quedar visible
+    return spaceOnLeft > spaceOnRight
+  }
 })
 
 // Calcular si el menú debe estar arriba o abajo
@@ -240,72 +173,69 @@ const isMenuOnTop = computed(() => {
   if (typeof window === 'undefined') return false
   
   const buttonSize = 64
-  const spaceBelow = position.y // espacio desde el borde inferior hasta el botón
-  const spaceAbove = windowHeight.value - position.y - buttonSize // espacio desde el botón hasta el borde superior
+  const menuHeight = 550 // Altura aproximada del menú con todas las opciones
+  const gap = 16
+  const minSpace = 20 // Espacio mínimo desde los bordes
+  const spaceBelow = position.y - minSpace // espacio desde el borde inferior hasta el botón
+  const spaceAbove = windowHeight.value - position.y - buttonSize - minSpace // espacio desde el botón hasta el borde superior
   
-  // Lógica:
-  // position.y = distancia desde el borde INFERIOR hasta el botón
-  // - Si position.y es GRANDE (ej: 700px) → botón está ARRIBA → spaceBelow=700, spaceAbove=36
-  // - Si position.y es PEQUEÑO (ej: 50px) → botón está ABAJO → spaceBelow=50, spaceAbove=686
+  // Verificar si el menú cabe en cada dirección
+  const fitsBelow = spaceBelow >= menuHeight + gap
+  const fitsAbove = spaceAbove >= menuHeight + gap
   
-  // Lógica simplificada y clara:
-  // Si el botón está ARRIBA (spaceBelow > spaceAbove): menú debe salir ABAJO → isMenuOnTop = false
-  // Si el botón está ABAJO (spaceAbove > spaceBelow): menú debe salir ARRIBA → isMenuOnTop = true
-  
-  // Por lo tanto: isMenuOnTop = spaceAbove > spaceBelow
-  // Esto da:
-  // - true cuando spaceAbove > spaceBelow (botón abajo) → menú arriba ✓
-  // - false cuando spaceBelow > spaceAbove (botón arriba) → menú abajo ✓
-  
-  const result = spaceAbove > spaceBelow
-  
-  // Debug temporal - verificar que la clase se aplique correctamente
-  if (isOpen.value) {
-    // Usar nextTick para asegurar que el DOM se haya actualizado
-    nextTick(() => {
-      const menuElement = document.querySelector('.accessibility-menu')
-      if (menuElement) {
-        const hasMenuTopClass = menuElement.classList.contains('menu-top')
-        console.log('🔍 Menu position debug:', {
-          positionY: position.y,
-          windowHeight: windowHeight.value,
-          spaceBelow,
-          spaceAbove,
-          buttonLocation: spaceBelow > spaceAbove ? 'ARRIBA' : 'ABAJO',
-          isMenuOnTop: result,
-          hasMenuTopClass,
-          menuDirection: result ? 'ARRIBA del botón' : 'ABAJO del botón',
-          expected: spaceBelow > spaceAbove ? 'ABAJO del botón' : 'ARRIBA del botón',
-          correct: (result && spaceAbove > spaceBelow) || (!result && spaceBelow > spaceAbove) ? '✓' : '✗',
-          classMatch: hasMenuTopClass === result ? '✓' : '✗ CLASE INCORRECTA'
-        })
-      }
-    })
+  // Si cabe en ambas direcciones, elegir la que tenga más espacio
+  if (fitsBelow && fitsAbove) {
+    return spaceAbove > spaceBelow
   }
   
-  return result
+  // Si solo cabe en una dirección, usar esa
+  if (fitsAbove && !fitsBelow) {
+    return true // Mostrar arriba
+  }
+  if (fitsBelow && !fitsAbove) {
+    return false // Mostrar abajo
+  }
+  
+  // Si no cabe en ninguna dirección, elegir la que tenga más espacio
+  // El menú tendrá scroll interno si es necesario
+  return spaceAbove > spaceBelow
 })
 
 // Cargar posición guardada
 const loadPosition = () => {
-  const saved = localStorage.getItem('accessibility-menu-position')
-  if (saved) {
-    const pos = JSON.parse(saved)
-    position.x = pos.x || 0
-    position.y = pos.y || 0
-  } else {
-    // Posición por defecto (esquina inferior derecha)
-    position.x = 32 // 2rem
-    position.y = 32 // 2rem
+  if (typeof window === 'undefined' || !localStorage) return
+  
+  try {
+    const saved = localStorage.getItem('accessibility-menu-position')
+    if (saved) {
+      const pos = JSON.parse(saved)
+      position.x = pos.x || 0
+      position.y = pos.y || 0
+    } else {
+      // Posición por defecto (esquina inferior derecha)
+      position.x = 32 // 2rem
+      position.y = 32 // 2rem
+    }
+  } catch (error) {
+    // Si hay error al leer localStorage, usar posición por defecto
+    position.x = 32
+    position.y = 32
   }
 }
 
 // Guardar posición
 const savePosition = () => {
-  localStorage.setItem('accessibility-menu-position', JSON.stringify({
-    x: position.x,
-    y: position.y
-  }))
+  if (typeof window === 'undefined' || !localStorage) return
+  
+  try {
+    localStorage.setItem('accessibility-menu-position', JSON.stringify({
+      x: position.x,
+      y: position.y
+    }))
+  } catch (error) {
+    // Silenciar errores de localStorage (puede fallar en modo incógnito)
+    console.warn('No se pudo guardar la posición del menú:', error)
+  }
 }
 
 // Iniciar arrastre
@@ -394,9 +324,149 @@ const { isGreyMode, toggleGreyMode } = useGreyMode()
 const { colorBlindnessType, setColorBlindnessType, colorBlindnessTypes } = useColorBlindness()
 const { cursorSize, cursorSizeDisplay, canIncreaseCursor, canDecreaseCursor, increaseCursorSize, decreaseCursorSize } = useCursorSize()
 const { isTextHighlightEnabled, toggleTextHighlight } = useTextHighlight()
+const { isParkinsonModeEnabled, toggleParkinsonMode } = useParkinsonAccessibility()
 
 // Lectura en voz alta
-const isVoiceReader = ref(localStorage.getItem("voice-reader") === "true")
+const isVoiceReader = ref(
+  typeof window !== 'undefined' && localStorage 
+    ? localStorage.getItem("voice-reader") === "true"
+    : false
+)
+
+// Menú circular radial
+const activeSubmenu = ref(null)
+const radialRadius = 90 // Radio del círculo donde se distribuyen las opciones
+
+// Opciones del menú radial
+const radialOptions = computed(() => [
+  {
+    id: 'zoom',
+    icon: '🔍',
+    label: 'Zoom',
+    title: `Zoom: ${zoomPercentage}`,
+    showLabel: false,
+    hasSubmenu: true,
+    isActive: false
+  },
+  {
+    id: 'darkMode',
+    icon: isDarkMode.value ? '🌙' : '☀️',
+    label: isDarkMode.value ? 'Oscuro' : 'Claro',
+    title: `Modo ${isDarkMode.value ? 'Oscuro' : 'Claro'}`,
+    showLabel: false,
+    hasSubmenu: false,
+    isActive: isDarkMode.value,
+    action: toggleDarkMode
+  },
+  {
+    id: 'greyMode',
+    icon: '🌓',
+    label: 'Grises',
+    title: 'Escala de grises',
+    showLabel: false,
+    hasSubmenu: false,
+    isActive: isGreyMode.value,
+    action: toggleGreyMode
+  },
+  {
+    id: 'colorBlindness',
+    icon: '🎨',
+    label: 'Daltonismo',
+    title: `Daltonismo: ${colorBlindnessTypes.find(t => t.value === colorBlindnessType.value)?.label || 'Normal'}`,
+    showLabel: false,
+    hasSubmenu: true,
+    isActive: colorBlindnessType.value !== 'none'
+  },
+  {
+    id: 'cursor',
+    icon: '🖱️',
+    label: 'Puntero',
+    title: `Tamaño del puntero: ${cursorSizeDisplay}`,
+    showLabel: false,
+    hasSubmenu: true,
+    isActive: cursorSize.value !== 100
+  },
+  {
+    id: 'textHighlight',
+    icon: '📖',
+    label: 'Resaltar',
+    title: 'Resaltar texto al pasar el cursor',
+    showLabel: false,
+    hasSubmenu: false,
+    isActive: isTextHighlightEnabled.value,
+    action: toggleTextHighlight
+  },
+  {
+    id: 'parkinson',
+    icon: '🤲',
+    label: 'Parkinson',
+    title: 'Modo Parkinson',
+    showLabel: false,
+    hasSubmenu: false,
+    isActive: isParkinsonModeEnabled.value,
+    action: toggleParkinsonMode
+  },
+  {
+    id: 'voiceReader',
+    icon: '🔊',
+    label: 'Voz',
+    title: 'Lectura en voz alta',
+    showLabel: false,
+    hasSubmenu: false,
+    isActive: isVoiceReader.value,
+    action: toggleVoiceReader
+  }
+])
+
+// Calcular posición radial de cada opción
+const getRadialPosition = (index) => {
+  const totalOptions = radialOptions.value.length
+  const angle = (index * 2 * Math.PI) / totalOptions - Math.PI / 2 // Empezar desde arriba
+  const x = Math.cos(angle) * radialRadius
+  const y = Math.sin(angle) * radialRadius
+  
+  return {
+    '--x': `${x}px`,
+    '--y': `${y}px`,
+    transform: `translate(${x}px, ${y}px)`
+  }
+}
+
+// Manejar clic en opción radial
+const handleRadialOptionClick = (option) => {
+  if (option.hasSubmenu) {
+    // Abrir submenú
+    activeSubmenu.value = {
+      id: option.id,
+      title: option.label,
+      position: getRadialPosition(radialOptions.value.findIndex(o => o.id === option.id))
+    }
+  } else if (option.action) {
+    // Ejecutar acción directamente
+    option.action()
+  }
+}
+
+// Cerrar submenú
+const closeSubmenu = () => {
+  activeSubmenu.value = null
+}
+
+// Calcular posición del submenú
+const getSubmenuPosition = () => {
+  if (!activeSubmenu.value) return {}
+  
+  const index = radialOptions.value.findIndex(o => o.id === activeSubmenu.value.id)
+  const angle = (index * 2 * Math.PI) / radialOptions.value.length - Math.PI / 2
+  const x = Math.cos(angle) * (radialRadius + 60)
+  const y = Math.sin(angle) * (radialRadius + 60)
+  
+  return {
+    '--x': `${x}px`,
+    '--y': `${y}px`,
+    transform: `translate(${x}px, ${y}px)`
+  }
+}
 
 const speak = (text) => {
   if (!window.speechSynthesis || !isVoiceReader.value) return
@@ -469,11 +539,17 @@ const handleCursorSizeChange = (event) => {
 // Toggle del menú
 const toggleMenu = () => {
   isOpen.value = !isOpen.value
-  // Forzar recálculo del computed cuando se abre el menú
-  if (isOpen.value) {
-    // El computed se recalculará automáticamente al acceder a isMenuOnTop
-    // pero forzamos un acceso para asegurar que se ejecute
-    void isMenuOnTop.value
+  if (!isOpen.value) {
+    activeSubmenu.value = null
+  }
+}
+
+// Manejar clic en overlay
+const handleOverlayClick = () => {
+  if (activeSubmenu.value) {
+    activeSubmenu.value = null
+  } else {
+    toggleMenu()
   }
 }
 
@@ -598,24 +674,300 @@ onBeforeUnmount(() => {
   box-shadow: 0 6px 30px rgba(30, 64, 175, 0.8);
 }
 
-/* Menú desplegable */
-.accessibility-menu {
+/* Menú circular radial */
+.radial-menu-container {
   position: absolute;
-  width: 320px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  overflow: visible;
+  width: 0;
+  height: 0;
+  /* Centrar perfectamente respecto al botón de 64px */
+  top: 32px; /* Mitad de la altura del botón (64px / 2) */
+  left: 32px; /* Mitad del ancho del botón (64px / 2) */
+  transform: translate(-50%, -50%);
   z-index: 10002;
+  pointer-events: none;
+}
+
+.radial-menu-item {
+  position: absolute;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid #e5e7eb;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: auto;
-  max-height: none;
-  overflow-y: visible;
-  
-  /* Posición por defecto: abajo del botón */
-  /* top: 100% coloca el menú justo debajo del botón (que tiene 64px de altura) */
-  top: calc(100% + 16px);
-  bottom: auto;
-  right: 0;
+  z-index: 10003;
+  top: 0;
+  left: 0;
+  transform-origin: center;
+  /* Centrar el botón respecto al punto de origen (centro del botón principal) */
+  margin-top: -28px; /* Mitad del ancho del botón (56px / 2) */
+  margin-left: -28px; /* Mitad del alto del botón (56px / 2) */
+}
+
+.radial-menu-item:hover {
+  transform: translate(var(--x, 0), var(--y, 0)) scale(1.15);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+  border-color: #3b82f6;
+  background: #f0f9ff;
+}
+
+.radial-menu-item.active {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  border-color: #2563eb;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.5);
+}
+
+.radial-menu-item.active .radial-icon {
+  filter: brightness(0) invert(1);
+}
+
+.radial-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+  display: block;
+}
+
+.radial-label {
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
+  background: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
+}
+
+.dark .radial-menu-item {
+  background: #1e293b;
+  border-color: #334155;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark .radial-menu-item:hover {
+  background: #1e3a8a;
+  border-color: #3b82f6;
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+}
+
+.dark .radial-label {
+  background: #1e293b;
+  color: #f1f5f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Submenú radial */
+.radial-submenu {
+  position: absolute;
+  width: 200px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  z-index: 10004;
+  pointer-events: auto;
+  top: 0;
+  left: 0;
+  transform-origin: center;
+}
+
+.dark .radial-submenu {
+  background: #1e293b;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.submenu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.dark .submenu-header {
+  border-bottom-color: #334155;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.submenu-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.dark .submenu-title {
+  color: #f1f5f9;
+}
+
+.submenu-close {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  transition: all 0.2s ease;
+}
+
+.submenu-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #1f2937;
+}
+
+.dark .submenu-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f1f5f9;
+}
+
+.submenu-close svg {
+  width: 16px;
+  height: 16px;
+}
+
+.submenu-content {
+  padding: 1rem;
+}
+
+.submenu-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.submenu-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  transition: all 0.2s ease;
+}
+
+.submenu-btn:hover:not(:disabled) {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+.submenu-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dark .submenu-btn {
+  background: #1e293b;
+  border-color: #334155;
+  color: #94a3b8;
+}
+
+.dark .submenu-btn:hover:not(:disabled) {
+  background: #334155;
+  border-color: #475569;
+  color: #cbd5e1;
+}
+
+.submenu-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.submenu-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+  min-width: 50px;
+  text-align: center;
+}
+
+.dark .submenu-value {
+  color: #e2e8f0;
+}
+
+.submenu-select {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  color: #1f2937;
+  font-size: 0.875rem;
+  cursor: pointer;
+  outline: none;
+}
+
+.dark .submenu-select {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
+/* Transiciones del menú radial */
+.radial-menu-enter-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.radial-menu-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.radial-menu-enter-from .radial-menu-item {
+  opacity: 0;
+  transform: translate(0, 0) scale(0);
+}
+
+.radial-menu-enter-to .radial-menu-item {
+  opacity: 1;
+}
+
+.radial-menu-leave-from .radial-menu-item {
+  opacity: 1;
+}
+
+.radial-menu-leave-to .radial-menu-item {
+  opacity: 0;
+  transform: translate(0, 0) scale(0);
+}
+
+/* Animación escalonada para los items */
+.radial-menu-enter-active .radial-menu-item {
+  transition-delay: calc(var(--index, 0) * 0.05s);
+}
+
+.submenu-enter-active,
+.submenu-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.submenu-enter-from,
+.submenu-leave-to {
+  opacity: 0;
+  transform: translate(var(--x, 0), var(--y, 0)) scale(0.8);
+}
+
+/* Menú desplegable (oculto) */
+.accessibility-menu {
+  display: none;
 }
 
 /* Si el botón está a la izquierda, mostrar menú a la derecha */
@@ -629,6 +981,45 @@ onBeforeUnmount(() => {
   /* bottom: 100% coloca el menú justo arriba del botón */
   bottom: calc(100% + 16px);
   top: auto;
+  /* Asegurar que no se salga por arriba */
+  max-height: calc(100vh - 100px);
+}
+
+/* Ajustar posición si el menú se sale de la pantalla */
+.accessibility-menu.menu-top {
+  /* Si el menú no cabe arriba, ajustar para que quepa */
+  max-height: calc(100vh - 20px);
+}
+
+/* Scrollbar personalizado para el menú */
+.accessibility-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.accessibility-menu::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.accessibility-menu::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.accessibility-menu::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark .accessibility-menu::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.dark .accessibility-menu::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+.dark .accessibility-menu::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
 }
 
 .dark .accessibility-menu {
@@ -640,7 +1031,7 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.25rem 1.5rem;
+  padding: 0.875rem 1rem;
   border-bottom: 1px solid #e5e7eb;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
 }
@@ -651,7 +1042,7 @@ onBeforeUnmount(() => {
 }
 
 .menu-title {
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1f2937;
   margin: 0;
@@ -662,9 +1053,9 @@ onBeforeUnmount(() => {
 }
 
 .close-button {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -686,20 +1077,20 @@ onBeforeUnmount(() => {
 }
 
 .close-button svg {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
 }
 
 .menu-content {
-  padding: 1rem;
-  overflow-y: visible;
-  overflow-x: visible;
+  padding: 0.75rem;
+  overflow-x: hidden;
+  /* El overflow-y se maneja en el contenedor .accessibility-menu */
 }
 
 .menu-item {
-  padding: 1rem;
-  border-radius: 12px;
-  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
   background: #f9fafb;
   transition: all 0.2s ease;
 }
@@ -723,23 +1114,23 @@ onBeforeUnmount(() => {
 .menu-item-header {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .menu-item-icon {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   line-height: 1;
 }
 
 .color-blindness-select {
   width: 100%;
-  padding: 0.5rem 0.75rem;
+  padding: 0.4375rem 0.625rem;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border-radius: 6px;
   background: white;
   color: #1f2937;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   cursor: pointer;
   transition: all 0.2s ease;
   outline: none;
@@ -770,7 +1161,7 @@ onBeforeUnmount(() => {
 }
 
 .menu-item-label {
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: #374151;
   flex: 1;
@@ -789,9 +1180,9 @@ onBeforeUnmount(() => {
 }
 
 .zoom-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
   border: 1px solid #e5e7eb;
   background: white;
   cursor: pointer;
@@ -831,17 +1222,17 @@ onBeforeUnmount(() => {
 }
 
 .zoom-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
 }
 
 .zoom-level-display {
-  min-width: 50px;
+  min-width: 45px;
   text-align: center;
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: #475569;
-  padding: 0 0.5rem;
+  padding: 0 0.375rem;
 }
 
 .dark .zoom-level-display {
@@ -854,6 +1245,7 @@ onBeforeUnmount(() => {
   align-items: center;
   justify-content: flex-end;
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .toggle-switch input {
@@ -862,10 +1254,10 @@ onBeforeUnmount(() => {
 
 .toggle-slider {
   position: relative;
-  width: 50px;
-  height: 26px;
+  width: 44px;
+  height: 24px;
   background-color: #e2e8f0;
-  border-radius: 13px;
+  border-radius: 12px;
   transition: background-color 0.3s ease;
 }
 
@@ -878,8 +1270,8 @@ onBeforeUnmount(() => {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   background-color: white;
   border-radius: 50%;
   transition: transform 0.3s ease;
@@ -895,7 +1287,7 @@ onBeforeUnmount(() => {
 }
 
 .toggle-switch input:checked + .toggle-slider::before {
-  transform: translateX(24px);
+  transform: translateX(20px);
 }
 
 /* Overlay */
@@ -949,7 +1341,7 @@ onBeforeUnmount(() => {
 
   .accessibility-menu {
     width: calc(100vw - 2rem);
-    max-width: 320px;
+    max-width: 280px;
   }
   
   .accessibility-menu:not(.menu-top) {

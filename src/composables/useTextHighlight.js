@@ -76,25 +76,30 @@ const applyTextHighlight = (enabled) => {
   }
 }
 
-// Inicializar resaltado de texto
-if (typeof window !== 'undefined') {
-  // Aplicar el estado guardado al cargar
-  if (isTextHighlightEnabled.value) {
-    setTimeout(() => {
-      applyTextHighlight(isTextHighlightEnabled.value)
-    }, 100)
+export const useTextHighlight = () => {
+  // Inicializar resaltado de texto solo cuando se use el composable
+  if (typeof window !== 'undefined') {
+    // Aplicar el estado guardado al cargar
+    if (isTextHighlightEnabled.value) {
+      // Usar nextTick para asegurar que el DOM esté listo
+      setTimeout(() => {
+        if (document.body) {
+          applyTextHighlight(isTextHighlightEnabled.value)
+        }
+      }, 100)
+    }
+    
+    // Observar cambios en el estado
+    watch(isTextHighlightEnabled, (newValue) => {
+      if (document.body) {
+        applyTextHighlight(newValue)
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('text-highlight-enabled', newValue.toString())
+        }
+      }
+    })
   }
   
-  // Observar cambios en el estado
-  watch(isTextHighlightEnabled, (newValue) => {
-    applyTextHighlight(newValue)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('text-highlight-enabled', newValue.toString())
-    }
-  })
-}
-
-export const useTextHighlight = () => {
   const toggleTextHighlight = () => {
     isTextHighlightEnabled.value = !isTextHighlightEnabled.value
   }
