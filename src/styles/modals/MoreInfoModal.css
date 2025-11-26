@@ -148,6 +148,7 @@
   left: 0;
   color: #2C4068;
   font-weight: bold;
+  pointer-events: none;
 }
 
 .info-list.ordered {
@@ -163,6 +164,7 @@
   content: counter(step-counter) '.';
   font-weight: 700;
   color: #2C4068;
+  pointer-events: none;
 }
 
 .info-list strong {

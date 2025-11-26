@@ -1,6 +1,6 @@
 <template>
-  <div v-if="isOpen" class="modal-overlay" @click="closeModal">
-    <div class="modal-container" @click.stop>
+  <div v-if="isOpen" class="modal-overlay" :style="{ '--modal-z-index': customZIndex, zIndex: customZIndex }" @click="closeModal">
+    <div class="modal-container" :class="{ 'auto-width': autoWidth }" @click.stop>
       <div class="modal-header">
         <h2 class="modal-title">{{ title }}</h2>
         <button class="modal-close" @click="closeModal">
@@ -26,6 +26,14 @@ const props = defineProps({
   title: {
     type: String,
     default: ''
+  },
+  customZIndex: {
+    type: Number,
+    default: 2000
+  },
+  autoWidth: {
+    type: Boolean,
+    default: false
   }
 })
 

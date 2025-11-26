@@ -37,7 +37,7 @@
       <!-- Diagrama de Ishikawa -->
       <div v-if="ishikawaData" class="ishikawa-diagram-section">
         <div ref="diagramContainer" class="ishikawa-diagram-container">
-          <!-- Botón para ver en pantalla completa -->
+          <!-- Botones de acción -->
           <div class="view-fullscreen-section">
             <button 
               class="btn-fullscreen"
@@ -105,6 +105,7 @@
               </tbody>
             </table>
           </div>
+
         </div>
       </div>
 
@@ -131,6 +132,16 @@
       </div>
     </div>
 
+    <!-- Modal de Comentarios (fuera de la cadena condicional) -->
+    <IshikawaCommentModal
+      :is-open="showCommentModal"
+      :categories="mainCategories"
+      :semester="selectedSemester"
+      :ishikawa-data="ishikawaData"
+      @close="showCommentModal = false"
+      @saved="handleCommentSaved"
+    />
+
     <template #footer>
       <button type="button" class="btn btn-secondary" @click="handleClose">
         Cerrar
@@ -150,9 +161,11 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue'
 import BaseModal from './BaseModal.vue'
+import IshikawaCommentModal from './IshikawaCommentModal.vue'
 import { useIshikawa } from '@/composables/modals/useIshikawa'
+import { useNotifications } from '@/composables/useNotifications'
 
 const props = defineProps({
   isOpen: {
@@ -171,12 +184,45 @@ const {
   mainCategories,
   availableSemesters,
   generateIshikawa: generateIshikawaLogic,
-  exportToPDF: exportToPDFFunction
+  exportToPDF: exportToPDFFunction,
+  resetForm: resetFormLogic
 } = useIshikawa()
 
+const { showSuccess } = useNotifications()
 const showFullscreen = ref(false)
+const showCommentModal = ref(false)
+const showCommentsViewModal = ref(false)
+const selectedCategoryForComments = ref(null)
+const comments = ref([])
+
+// Función para limpiar todos los comentarios del localStorage
+const clearAllComments = () => {
+  try {
+    // Obtener todas las claves del localStorage
+    const keys = Object.keys(localStorage)
+    // Eliminar todas las claves relacionadas con comentarios de Ishikawa
+    keys.forEach(key => {
+      if (key.startsWith('ishikawa_comments_')) {
+        localStorage.removeItem(key)
+      }
+    })
+  } catch (error) {
+    console.error('Error al limpiar comentarios:', error)
+  }
+}
 
 const handleClose = () => {
+  // Limpiar estado al cerrar
+  showCommentModal.value = false
+  showCommentsViewModal.value = false
+  comments.value = []
+  selectedCategoryForComments.value = null
+  
+  // Limpiar comentarios del localStorage para todos los semestres
+  clearAllComments()
+  
+  // Resetear el formulario del composable
+  resetFormLogic()
   emit('close')
 }
 
@@ -203,6 +249,87 @@ const openFullscreen = () => {
 const handleExport = () => {
   exportToPDFFunction(diagramContainer.value)
 }
+
+// Funciones para manejar comentarios
+const loadComments = () => {
+  if (!selectedSemester.value) {
+    comments.value = []
+    return
+  }
+  
+  try {
+    const storageKey = `ishikawa_comments_${selectedSemester.value}`
+    const storedComments = localStorage.getItem(storageKey)
+    comments.value = storedComments ? JSON.parse(storedComments) : []
+  } catch (error) {
+    console.error('Error al cargar comentarios:', error)
+    comments.value = []
+  }
+}
+
+const getCommentsByCategory = (categoryId) => {
+  return comments.value.filter(comment => comment.categoryId === categoryId)
+}
+
+const handleCommentSaved = () => {
+  loadComments()
+}
+
+const deleteComment = (commentId) => {
+  if (!selectedSemester.value) return
+  
+  try {
+    const storageKey = `ishikawa_comments_${selectedSemester.value}`
+    comments.value = comments.value.filter(c => c.id !== commentId)
+    localStorage.setItem(storageKey, JSON.stringify(comments.value))
+    showSuccess('Éxito', 'Comentario eliminado')
+  } catch (error) {
+    console.error('Error al eliminar comentario:', error)
+  }
+}
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+// Limpiar todo cuando se cierra el modal
+watch(() => props.isOpen, (isOpen) => {
+  if (isOpen && selectedSemester.value) {
+    loadComments()
+  } else if (!isOpen) {
+    // Limpiar estado cuando se cierra el modal
+    showCommentModal.value = false
+    showCommentsViewModal.value = false
+    comments.value = []
+    selectedCategoryForComments.value = null
+    // Limpiar comentarios del localStorage
+    clearAllComments()
+  }
+})
+
+// Cargar comentarios cuando cambie el semestre o se genere el diagrama
+watch([selectedSemester, ishikawaData], () => {
+  if (selectedSemester.value && ishikawaData.value) {
+    loadComments()
+  }
+})
+
+// Limpiar al desmontar el componente
+onBeforeUnmount(() => {
+  showCommentModal.value = false
+  showCommentsViewModal.value = false
+  comments.value = []
+  selectedCategoryForComments.value = null
+  clearAllComments()
+  resetFormLogic()
+})
 </script>
 
 <style scoped>

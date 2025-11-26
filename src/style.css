@@ -5,6 +5,16 @@
   box-sizing: border-box;
 }
 
+/* Asegurar que los pseudo-elementos decorativos no bloqueen los clics */
+button::before,
+button::after,
+a::before,
+a::after,
+.btn::before,
+.btn::after {
+  pointer-events: none;
+}
+
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;

@@ -300,6 +300,7 @@ const handleLogout = async () => {
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
   transition: left 0.5s;
+  pointer-events: none;
 }
 
 .logout-btn:hover::before {

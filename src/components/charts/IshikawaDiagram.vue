@@ -62,7 +62,7 @@
         />
         
         <!-- Grupo para hover - agrupa la caja y los textos -->
-        <g class="category-group">
+        <g class="category-group" @click="handleCategoryClick(category)" style="cursor: pointer;">
           <!-- Caja categoría -->
           <rect
             :x="getBranchX(index) - 70"
@@ -120,6 +120,37 @@
           >
             {{ truncateText(factor, 20) }}
           </text>
+          
+          <!-- Contador de comentarios en la línea punteada - muestra comentarios de la subcategoría específica -->
+          <g 
+            v-if="getCommentCountForFactor(category.id, factor) > 0"
+            @click="handleSubcategoryClick(category, factor)"
+            style="cursor: pointer;"
+            class="comment-counter-group"
+          >
+            <!-- Círculo de fondo para el contador - posicionado más arriba de la línea -->
+            <circle
+              :cx="getFactorX(index, fIndex) - 55"
+              :cy="getFactorY(index, fIndex) - 20"
+              r="16"
+              :fill="getCategoryColor(category.id)"
+              opacity="1"
+              filter="drop-shadow(0 2px 6px rgba(0, 0, 0, 0.4))"
+              class="comment-counter-circle"
+            />
+            <!-- Número de comentarios -->
+            <text
+              :x="getFactorX(index, fIndex) - 55"
+              :y="getFactorY(index, fIndex) - 15"
+              fill="white"
+              font-size="12"
+              font-weight="700"
+              text-anchor="middle"
+              class="comment-counter-text"
+            >
+              {{ getCommentCountForFactor(category.id, factor) }}
+            </text>
+          </g>
         </g>
       </g>
     </svg>
@@ -140,8 +171,14 @@ const props = defineProps({
   expanded: {
     type: Boolean,
     default: false
+  },
+  comments: {
+    type: Array,
+    default: () => []
   }
 })
+
+const emit = defineEmits(['category-click', 'subcategory-click'])
 
 const sortedCategories = computed(() => {
   if (!props.data?.categories) return []
@@ -259,6 +296,47 @@ const truncateText = (text, maxLength) => {
   if (!text) return ''
   return text.length > maxLength ? text.substring(0, maxLength) + '...' : text
 }
+
+// Obtener el conteo de comentarios para una categoría (sin subcategoría específica)
+const getCommentCount = (categoryId) => {
+  if (!props.comments || props.comments.length === 0) return 0
+  return props.comments.filter(comment => 
+    comment.categoryId === categoryId && !comment.subcategory
+  ).length
+}
+
+// Obtener el conteo de comentarios para una subcategoría específica (factor)
+const getCommentCountForFactor = (categoryId, factorName) => {
+  if (!props.comments || props.comments.length === 0) return 0
+  return props.comments.filter(comment => 
+    comment.categoryId === categoryId && 
+    comment.subcategory === factorName
+  ).length
+}
+
+// Manejar clic en categoría
+const handleCategoryClick = (category) => {
+  const categoryComments = props.comments?.filter(comment => comment.categoryId === category.id) || []
+  emit('category-click', {
+    categoryId: category.id,
+    categoryName: category.name,
+    comments: categoryComments
+  })
+}
+
+// Manejar clic en subcategoría (contador de comentarios)
+const handleSubcategoryClick = (category, subcategoryName) => {
+  const subcategoryComments = props.comments?.filter(comment => 
+    comment.categoryId === category.id && 
+    comment.subcategory === subcategoryName
+  ) || []
+  emit('subcategory-click', {
+    categoryId: category.id,
+    categoryName: category.name,
+    subcategory: subcategoryName,
+    comments: subcategoryComments
+  })
+}
 </script>
 
 <style scoped>
@@ -291,6 +369,27 @@ const truncateText = (text, maxLength) => {
 
 .category-group:hover {
   transform: scale(1.05);
+}
+
+.comment-counter-group {
+  transition: filter 0.2s ease;
+}
+
+.comment-counter-circle {
+  transition: all 0.2s ease;
+}
+
+.comment-counter-group:hover .comment-counter-circle {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.6)) brightness(1.1);
+  opacity: 0.95;
+}
+
+.comment-counter-text {
+  transition: font-weight 0.2s ease;
+}
+
+.comment-counter-group:hover .comment-counter-text {
+  font-weight: 800;
 }
 
 .loading-state {

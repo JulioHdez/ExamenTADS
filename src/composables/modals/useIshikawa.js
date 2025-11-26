@@ -265,6 +265,158 @@ export function useIshikawa() {
         yPos += 10
       })
       
+      // === PÁGINA 3: COMENTARIOS (si hay comentarios) ===
+      // Cargar comentarios del localStorage
+      let allComments = []
+      try {
+        const storageKey = `ishikawa_comments_${ishikawaData.value.semester}`
+        const storedComments = localStorage.getItem(storageKey)
+        allComments = storedComments ? JSON.parse(storedComments) : []
+      } catch (error) {
+        console.error('Error al cargar comentarios para PDF:', error)
+      }
+      
+      if (allComments.length > 0) {
+        pdf.addPage('landscape', 'a4')
+        
+        // Encabezado de página de comentarios
+        pdf.setFillColor(26, 42, 74)
+        pdf.rect(0, 0, pdfWidth, 40, 'F')
+        
+        pdf.setTextColor(255, 255, 255)
+        pdf.setFont('helvetica', 'bold')
+        pdf.setFontSize(24)
+        pdf.text('COMENTARIOS Y OBSERVACIONES', pdfWidth / 2, 25, { align: 'center' })
+        
+        // Organizar comentarios por categoría y subcategoría
+        const commentsByCategory = {}
+        allComments.forEach(comment => {
+          if (!commentsByCategory[comment.categoryId]) {
+            commentsByCategory[comment.categoryId] = {}
+          }
+          const subcategory = comment.subcategory || 'General'
+          if (!commentsByCategory[comment.categoryId][subcategory]) {
+            commentsByCategory[comment.categoryId][subcategory] = []
+          }
+          commentsByCategory[comment.categoryId][subcategory].push(comment)
+        })
+        
+        // Colores por categoría
+        const categoryColors = {
+          'academico': { r: 59, g: 130, b: 246 },
+          'psicosocial': { r: 139, g: 92, b: 246 },
+          'economico': { r: 245, g: 158, b: 11 },
+          'salud': { r: 236, g: 72, b: 153 }
+        }
+        
+        let commentYPos = 50
+        
+        // Recorrer categorías del diagrama
+        ishikawaData.value.categories.forEach(category => {
+          if (!commentsByCategory[category.id] || Object.keys(commentsByCategory[category.id]).length === 0) {
+            return
+          }
+          
+          // Verificar si necesitamos nueva página
+          if (commentYPos > pdfHeight - 60) {
+            pdf.addPage('landscape', 'a4')
+            pdf.setFillColor(26, 42, 74)
+            pdf.rect(0, 0, pdfWidth, 40, 'F')
+            pdf.setTextColor(255, 255, 255)
+            pdf.setFont('helvetica', 'bold')
+            pdf.setFontSize(24)
+            pdf.text('COMENTARIOS Y OBSERVACIONES (continuación)', pdfWidth / 2, 25, { align: 'center' })
+            commentYPos = 50
+          }
+          
+          // Título de categoría
+          const catColor = categoryColors[category.id] || { r: 107, g: 114, b: 128 }
+          pdf.setFillColor(catColor.r, catColor.g, catColor.b)
+          pdf.rect(20, commentYPos, pdfWidth - 40, 8, 'F')
+          
+          pdf.setTextColor(255, 255, 255)
+          pdf.setFont('helvetica', 'bold')
+          pdf.setFontSize(12)
+          pdf.text(category.name.toUpperCase(), 25, commentYPos + 5.5)
+          
+          commentYPos += 10
+          
+          // Recorrer subcategorías
+          Object.keys(commentsByCategory[category.id]).forEach(subcategory => {
+            const subcategoryComments = commentsByCategory[category.id][subcategory]
+            
+            // Verificar si necesitamos nueva página
+            if (commentYPos > pdfHeight - 40) {
+              pdf.addPage('landscape', 'a4')
+              pdf.setFillColor(26, 42, 74)
+              pdf.rect(0, 0, pdfWidth, 40, 'F')
+              pdf.setTextColor(255, 255, 255)
+              pdf.setFont('helvetica', 'bold')
+              pdf.setFontSize(24)
+              pdf.text('COMENTARIOS Y OBSERVACIONES (continuación)', pdfWidth / 2, 25, { align: 'center' })
+              commentYPos = 50
+            }
+            
+            // Subtítulo de subcategoría
+            pdf.setFillColor(249, 250, 251)
+            pdf.rect(25, commentYPos, pdfWidth - 50, 6, 'F')
+            
+            pdf.setTextColor(55, 65, 81)
+            pdf.setFont('helvetica', 'bold')
+            pdf.setFontSize(10)
+            pdf.text(`  ${subcategory} (${subcategoryComments.length})`, 27, commentYPos + 4)
+            
+            commentYPos += 8
+            
+            // Comentarios de la subcategoría
+            subcategoryComments.forEach(comment => {
+              // Verificar si necesitamos nueva página
+              if (commentYPos > pdfHeight - 30) {
+                pdf.addPage('landscape', 'a4')
+                pdf.setFillColor(26, 42, 74)
+                pdf.rect(0, 0, pdfWidth, 40, 'F')
+                pdf.setTextColor(255, 255, 255)
+                pdf.setFont('helvetica', 'bold')
+                pdf.setFontSize(24)
+                pdf.text('COMENTARIOS Y OBSERVACIONES (continuación)', pdfWidth / 2, 25, { align: 'center' })
+                commentYPos = 50
+              }
+              
+              // Caja del comentario
+              pdf.setFillColor(255, 255, 255)
+              pdf.setDrawColor(209, 213, 219)
+              pdf.setLineWidth(0.3)
+              pdf.rect(30, commentYPos, pdfWidth - 60, 8, 'FD')
+              
+              // Texto del comentario
+              pdf.setTextColor(55, 65, 81)
+              pdf.setFont('helvetica', 'normal')
+              pdf.setFontSize(8)
+              const commentLines = pdf.splitTextToSize(comment.text, pdfWidth - 70)
+              pdf.text(commentLines, 33, commentYPos + 5, { maxWidth: pdfWidth - 66 })
+              
+              // Fecha del comentario
+              pdf.setFontSize(7)
+              pdf.setTextColor(107, 114, 128)
+              const commentDate = new Date(comment.date).toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+              pdf.text(commentDate, pdfWidth - 35, commentYPos + 5, { align: 'right' })
+              
+              commentYPos += 10
+            })
+            
+            commentYPos += 2 // Espacio entre subcategorías
+          })
+          
+          commentYPos += 3 // Espacio entre categorías
+        })
+      }
+      
       // Guardar
       const fecha = new Date().toISOString().split('T')[0]
       const pdfBuffer = await pdf.output('arraybuffer')

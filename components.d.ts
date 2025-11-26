@@ -25,6 +25,8 @@ declare module 'vue' {
     HistogramModal: typeof import('./src/components/modals/HistogramModal.vue')['default']
     ImportDataModal: typeof import('./src/components/modals/ImportDataModal.vue')['default']
     IshikawaChart: typeof import('./src/components/charts/IshikawaChart.vue')['default']
+    IshikawaCommentModal: typeof import('./src/components/modals/IshikawaCommentModal.vue')['default']
+    IshikawaCommentsViewModal: typeof import('./src/components/modals/IshikawaCommentsViewModal.vue')['default']
     IshikawaDiagram: typeof import('./src/components/charts/IshikawaDiagram.vue')['default']
     IshikawaFullscreen: typeof import('./src/components/modals/IshikawaFullscreen.vue')['default']
     IshikawaMermaid: typeof import('./src/components/charts/IshikawaMermaid.vue')['default']
