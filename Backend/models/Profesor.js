@@ -149,12 +149,43 @@ class Profesor extends BaseModel {
                     INNER JOIN carreras c ON e.id_carrera = c.id_carrera
                     INNER JOIN profesores p ON p.id_carrera = c.id_carrera
                     WHERE p.id_profesor = @idProfesor
+                    AND c.nombre_carrera = 'Ingeniería en Sistemas'
                     ORDER BY e.apellido_paterno, e.apellido_materno, e.nombre
                 `);
             
             return result.recordset;
         } catch (error) {
             throw new Error(`Error al obtener estudiantes del profesor: ${error.message}`);
+        }
+    }
+
+    // Obtener calificaciones de estudiantes de la carrera del profesor
+    async getCalificaciones(idProfesor) {
+        try {
+            const pool = await getConnection();
+            const result = await pool.request()
+                .input('idProfesor', mssql.Int, idProfesor)
+                .query(`
+                    SELECT DISTINCT
+                        e.num_control,
+                        m.nombre_materia,
+                        cp.calificacion,
+                        cp.num_unidad,
+                        cp.fecha_evaluacion,
+                        e.nombre + ' ' + e.apellido_paterno + ' ' + e.apellido_materno as nombre_completo
+                    FROM calificaciones_parciales cp
+                    INNER JOIN grupos g ON cp.id_grupo = g.id_grupo
+                    INNER JOIN materias m ON g.id_materia = m.id_materia
+                    INNER JOIN estudiantes e ON g.id_estudiante = e.id_estudiante
+                    INNER JOIN carreras c ON e.id_carrera = c.id_carrera
+                    INNER JOIN profesores p ON p.id_carrera = c.id_carrera
+                    WHERE p.id_profesor = @idProfesor
+                    ORDER BY e.num_control, m.nombre_materia, cp.num_unidad
+                `);
+            
+            return result.recordset;
+        } catch (error) {
+            throw new Error(`Error al obtener calificaciones del profesor: ${error.message}`);
         }
     }
 }

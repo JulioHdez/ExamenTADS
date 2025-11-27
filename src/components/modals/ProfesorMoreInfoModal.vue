@@ -52,7 +52,17 @@
           <h3>Mis Estudiantes</h3>
         </div>
         <div class="info-card">
-          <p class="coming-soon">Esta funcionalidad estará disponible próximamente.</p>
+          <h4>¿Cómo consultar mis estudiantes?</h4>
+          <ol class="info-list ordered">
+            <li>Haz clic en <strong>"Mis Estudiantes"</strong> en el menú lateral</li>
+            <li>Se mostrará una tabla con todos los estudiantes de <strong>Ingenieria en Sistemas</strong></li>
+            <li>La tabla incluye: Número de Control, Nombre Completo, Email, Semestre y Estatus</li>
+            <li>Usa el campo de búsqueda para filtrar estudiantes por nombre o número de control</li>
+            <li>Los estudiantes se muestran ordenados alfabéticamente por apellidos</li>
+          </ol>
+          <div class="info-tip">
+            <strong>Nota:</strong> Solo se muestran los estudiantes que cursan la carrera de Ingenieria en Sistemas. El sistema filtra automaticamente segun tu carrera asignada.
+          </div>
         </div>
       </div>
 
@@ -62,7 +72,25 @@
           <h3>Calificaciones</h3>
         </div>
         <div class="info-card">
-          <p class="coming-soon">Esta funcionalidad estará disponible próximamente.</p>
+          <h4>¿Cómo consultar las calificaciones?</h4>
+          <ol class="info-list ordered">
+            <li>Haz clic en <strong>"Calificaciones"</strong> en el menú lateral</li>
+            <li>Se mostrará una tabla con todas las calificaciones de estudiantes de tu carrera</li>
+            <li>La tabla incluye: Número de Control, Nombre del Estudiante, Materia, Unidad, Calificación y Fecha</li>
+            <li>Las calificaciones se muestran con colores según su valor:
+              <ul class="info-list nested">
+                <li><span class="calificacion-excelente">Verde (90-100):</span> Excelente</li>
+                <li><span class="calificacion-buena">Azul (80-89):</span> Buena</li>
+                <li><span class="calificacion-regular">Naranja (70-79):</span> Regular</li>
+                <li><span class="calificacion-baja">Rojo (0-69):</span> Baja</li>
+              </ul>
+            </li>
+            <li>Usa el campo de búsqueda para filtrar por número de control, nombre del estudiante o materia</li>
+            <li>Las calificaciones están ordenadas por número de control, materia y unidad</li>
+          </ol>
+          <div class="info-tip">
+            <strong>Tip:</strong> Puedes buscar calificaciones específicas escribiendo el número de control o el nombre de la materia en el campo de búsqueda.
+          </div>
         </div>
       </div>
 
@@ -88,11 +116,21 @@
           <h3>Funciones de Accesibilidad</h3>
         </div>
         <div class="info-card">
+          <p>El sistema incluye un menú de accesibilidad completo ubicado en la esquina inferior derecha (botón flotante con icono de persona). Puedes arrastrarlo a cualquier posición de la pantalla.</p>
+          <h4>Funciones disponibles:</h4>
           <ul class="info-list">
-            <li><strong>Zoom:</strong> Usa los controles de zoom (lupa + / -) en la esquina superior derecha para ajustar el tamaño de la interfaz según tu comodidad</li>
-            <li><strong>Modo Oscuro:</strong> Activa o desactiva el modo oscuro según tu preferencia para reducir la fatiga visual</li>
-            <li><strong>Responsive:</strong> El sistema se adapta automáticamente a diferentes tamaños de pantalla, permitiendo su uso en tablets y dispositivos móviles</li>
+            <li><strong>🔍 Zoom:</strong> Ajusta el tamaño de la interfaz desde 50% hasta 200% usando los controles + y -</li>
+            <li><strong>☀️/🌙 Modo Claro/Oscuro:</strong> Alterna entre modo claro y oscuro para reducir la fatiga visual</li>
+            <li><strong>🌓 Escala de Grises:</strong> Activa el modo de escala de grises para usuarios con daltonismo</li>
+            <li><strong>🎨 Daltonismo:</strong> Selecciona diferentes tipos de ajustes para daltonismo (Protanopia, Deuteranopia, Tritanopia)</li>
+            <li><strong>🖱️ Tamaño del Puntero:</strong> Aumenta o disminuye el tamaño del cursor para facilitar su visualización</li>
+            <li><strong>📖 Resaltar Texto:</strong> Activa el resaltado automático del texto al pasar el cursor sobre él</li>
+            <li><strong>🤲 Modo Parkinson:</strong> Reduce las animaciones y efectos visuales para usuarios con temblores</li>
+            <li><strong>🔊 Lectura en Voz Alta:</strong> Activa la lectura automática del texto al pasar el cursor sobre los elementos</li>
           </ul>
+          <div class="info-tip">
+            <strong>Tip:</strong> El menú de accesibilidad es arrastrable. Puedes moverlo a cualquier posición de la pantalla según tu comodidad. Todas las preferencias se guardan automáticamente.
+          </div>
         </div>
       </div>
 
@@ -153,17 +191,46 @@ const emit = defineEmits(['close'])
 <style scoped>
 @import '@/styles/modals/MoreInfoModal.css';
 
-.coming-soon {
-  text-align: center;
-  color: #64748b;
-  font-style: italic;
-  padding: 2rem;
-  margin: 0;
-  font-size: 1rem;
+.calificacion-excelente {
+  color: #059669;
+  font-weight: 600;
 }
 
-.dark .coming-soon {
-  color: #94a3b8;
+.dark .calificacion-excelente {
+  color: #34d399;
+}
+
+.calificacion-buena {
+  color: #2563eb;
+  font-weight: 600;
+}
+
+.dark .calificacion-buena {
+  color: #60a5fa;
+}
+
+.calificacion-regular {
+  color: #d97706;
+  font-weight: 600;
+}
+
+.dark .calificacion-regular {
+  color: #fbbf24;
+}
+
+.calificacion-baja {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.dark .calificacion-baja {
+  color: #f87171;
+}
+
+.info-list.nested {
+  margin-top: 0.5rem;
+  margin-left: 1.5rem;
+  list-style-type: disc;
 }
 </style>
 

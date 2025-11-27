@@ -97,6 +97,21 @@ class ProfesorController extends BaseController {
             this.handleDatabaseError(error, res);
         }
     }
+
+    // Obtener calificaciones del profesor
+    async getCalificaciones(req, res) {
+        try {
+            const { id } = req.params;
+            const calificaciones = await this.model.getCalificaciones(parseInt(id));
+            
+            res.json({
+                success: true,
+                data: calificaciones
+            });
+        } catch (error) {
+            this.handleDatabaseError(error, res);
+        }
+    }
 }
 
 module.exports = ProfesorController;

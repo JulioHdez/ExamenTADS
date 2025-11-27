@@ -16,21 +16,12 @@
         <p class="dashboard-subtitle">Panel de control del profesor</p>
       </div>
 
-      <!-- Contenido del dashboard -->
-      <div class="dashboard-content">
-        <div class="info-card">
-          <h2>Información del Profesor</h2>
-          <p><strong>Carrera:</strong> {{ userInfo?.nombre_carrera || 'No asignada' }}</p>
-          <p><strong>Rol:</strong> {{ userInfo?.nombre_rol || 'Profesor' }}</p>
-          <p><strong>Email:</strong> {{ userInfo?.email || 'No disponible' }}</p>
-        </div>
-        
-        <div class="info-card">
-          <h2>Funcionalidades</h2>
-          <p>Las funcionalidades del dashboard de profesor se implementarán próximamente.</p>
-          <p>Aquí podrás ver tus materias y los estudiantes de tu carrera.</p>
-        </div>
-      </div>
+      <!-- Métricas y Cards -->
+      <ProfesorMetricsGrid 
+        @open-materias="openMateriasModal"
+        @open-estudiantes="openEstudiantesModal"
+        @open-calificaciones="openCalificacionesModal"
+      />
     </div>
 
     <!-- Modales -->
@@ -43,6 +34,16 @@
       :is-open="showMateriasModal" 
       @close="closeMateriasModal"
     />
+    
+    <ProfesorEstudiantesModal 
+      :is-open="showEstudiantesModal" 
+      @close="closeEstudiantesModal"
+    />
+    
+    <ProfesorCalificacionesModal 
+      :is-open="showCalificacionesModal" 
+      @close="closeCalificacionesModal"
+    />
   </div>
 </template>
 
@@ -51,6 +52,9 @@ import { ref } from 'vue'
 import ProfesorSidebar from '@/components/layout/ProfesorSidebar.vue'
 import ProfesorMoreInfoModal from '@/components/modals/ProfesorMoreInfoModal.vue'
 import ProfesorMateriasModal from '@/components/modals/ProfesorMateriasModal.vue'
+import ProfesorEstudiantesModal from '@/components/modals/ProfesorEstudiantesModal.vue'
+import ProfesorCalificacionesModal from '@/components/modals/ProfesorCalificacionesModal.vue'
+import ProfesorMetricsGrid from '@/components/ui/ProfesorMetricsGrid.vue'
 import AccessibilityMenu from '@/components/ui/AccessibilityMenu.vue'
 import { useAuthStore } from '@/stores/auth'
 
@@ -63,6 +67,8 @@ const isSidebarExpanded = ref(false)
 // Modal states
 const showMoreInfoModal = ref(false)
 const showMateriasModal = ref(false)
+const showEstudiantesModal = ref(false)
+const showCalificacionesModal = ref(false)
 
 // Obtener información del usuario
 const userInfo = authStore.userInfo
@@ -76,8 +82,11 @@ const setActiveItem = (itemId) => {
     showMoreInfoModal.value = true
   } else if (itemId === 'materias') {
     showMateriasModal.value = true
+  } else if (itemId === 'estudiantes') {
+    showEstudiantesModal.value = true
+  } else if (itemId === 'calificaciones') {
+    showCalificacionesModal.value = true
   }
-  // Aquí se pueden agregar más modales cuando se implementen las funcionalidades
 }
 
 const handleSidebarToggle = (expanded) => {
@@ -92,6 +101,31 @@ const closeMoreInfoModal = () => {
 const closeMateriasModal = () => {
   showMateriasModal.value = false
   activeItem.value = 'dashboard'
+}
+
+const closeEstudiantesModal = () => {
+  showEstudiantesModal.value = false
+  activeItem.value = 'dashboard'
+}
+
+const closeCalificacionesModal = () => {
+  showCalificacionesModal.value = false
+  activeItem.value = 'dashboard'
+}
+
+const openMateriasModal = () => {
+  showMateriasModal.value = true
+  activeItem.value = 'materias'
+}
+
+const openEstudiantesModal = () => {
+  showEstudiantesModal.value = true
+  activeItem.value = 'estudiantes'
+}
+
+const openCalificacionesModal = () => {
+  showCalificacionesModal.value = true
+  activeItem.value = 'calificaciones'
 }
 </script>
 

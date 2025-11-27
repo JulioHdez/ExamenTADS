@@ -653,6 +653,11 @@ const handleExport = async () => {
   pointer-events: auto;
 }
 
+/* Asegurar que ningún elemento del overlay bloquee los botones */
+.fullscreen-overlay > *:not(.fullscreen-content) {
+  z-index: 9998;
+}
+
 .fullscreen-content {
   width: 100%;
   max-width: 95vw;
@@ -665,6 +670,7 @@ const handleExport = async () => {
   overflow: hidden;
   position: relative;
   z-index: 10000;
+  isolation: isolate;
 }
 
 .toolbar {
@@ -675,7 +681,7 @@ const handleExport = async () => {
   background: linear-gradient(135deg, #2C4068 0%, #1a2a4a 100%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
-  z-index: 10;
+  z-index: 10001;
   flex-shrink: 0;
 }
 
@@ -686,15 +692,16 @@ const handleExport = async () => {
   margin: 0;
   flex: 1;
   min-width: 0;
+  pointer-events: none;
 }
 
 .toolbar-actions {
   display: flex;
-  gap: 1rem;
+  gap: 1.25rem;
   align-items: center;
   flex-shrink: 0;
   position: relative;
-  z-index: 11;
+  z-index: 10002;
 }
 
 .btn-toolbar {
@@ -708,7 +715,7 @@ const handleExport = async () => {
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
-  z-index: 12;
+  z-index: 10003;
   min-width: fit-content;
   white-space: nowrap;
   user-select: none;
@@ -717,16 +724,42 @@ const handleExport = async () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 44px;
+  min-width: 120px;
+  box-sizing: border-box;
+  isolation: isolate;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Área clickeable extendida para facilitar el clic */
+.btn-toolbar::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  z-index: -1;
+  pointer-events: auto;
 }
 
 .btn-toolbar:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  z-index: 10004;
 }
 
 .btn-toolbar:active:not(:disabled) {
   transform: translateY(0);
+  z-index: 10004;
+}
+
+.btn-toolbar:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+  z-index: 10004;
 }
 
 .btn-comment {
@@ -742,11 +775,48 @@ const handleExport = async () => {
 .btn-export {
   background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   border: none;
+  padding: 1rem 2rem;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  min-width: 150px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-export::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.btn-export:hover:not(:disabled)::after {
+  width: 300px;
+  height: 300px;
 }
 
 .btn-export:hover:not(:disabled) {
   background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-export:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4);
+}
+
+.btn-export:disabled {
+  background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+  box-shadow: none;
+  cursor: not-allowed;
 }
 
 .btn-toolbar:disabled {
@@ -760,6 +830,25 @@ const handleExport = async () => {
   overflow: auto;
   padding: 2rem;
   background: #1a1a1a;
+  position: relative;
+  z-index: 1;
+}
+
+/* Asegurar que el diagrama no interfiera con los botones */
+.diagram-content > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Asegurar que el SVG del diagrama no bloquee los botones */
+.diagram-content svg {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+}
+
+/* Asegurar que ningún elemento del diagrama tenga z-index alto */
+.diagram-content .ishikawa-wrapper {
   position: relative;
   z-index: 1;
 }

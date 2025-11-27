@@ -49,6 +49,15 @@ if (process.env.NODE_ENV === 'development') {
     app.use(morgan('combined'));
 }
 
+// Middleware para asegurar UTF-8 en todas las respuestas JSON
+app.use((req, res, next) => {
+    res.charset = 'utf-8';
+    if (res.getHeader('Content-Type') && res.getHeader('Content-Type').includes('application/json')) {
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    }
+    next();
+});
+
 // Middleware para parsear JSON
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));

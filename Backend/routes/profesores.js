@@ -12,6 +12,7 @@ router.get('/', (req, res) => profesorController.getAll(req, res));
 router.get('/:id', (req, res) => profesorController.getById(req, res));
 router.get('/:id/materias', (req, res) => profesorController.getMaterias(req, res));
 router.get('/:id/estudiantes', (req, res) => profesorController.getEstudiantes(req, res));
+router.get('/:id/calificaciones', (req, res) => profesorController.getCalificaciones(req, res));
 router.post('/', (req, res) => profesorController.create(req, res));
 router.put('/:id', (req, res) => profesorController.update(req, res));
 router.delete('/:id', (req, res) => profesorController.delete(req, res));
