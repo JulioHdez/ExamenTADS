@@ -131,6 +131,7 @@ import { useColorBlindness } from '@/composables/useColorBlindness'
 import { useCursorSize } from '@/composables/useCursorSize'
 import { useTextHighlight } from '@/composables/useTextHighlight'
 import { useParkinsonAccessibility } from '@/composables/useParkinsonAccessibility'
+import { useDyslexia } from '@/composables/useDyslexia'
 
 const isOpen = ref(false)
 const isDragging = ref(false)
@@ -325,6 +326,7 @@ const { colorBlindnessType, setColorBlindnessType, colorBlindnessTypes } = useCo
 const { cursorSize, cursorSizeDisplay, canIncreaseCursor, canDecreaseCursor, increaseCursorSize, decreaseCursorSize } = useCursorSize()
 const { isTextHighlightEnabled, toggleTextHighlight } = useTextHighlight()
 const { isParkinsonModeEnabled, toggleParkinsonMode } = useParkinsonAccessibility()
+const { isDyslexiaModeEnabled, toggleDyslexiaMode } = useDyslexia()
 
 // Lectura en voz alta
 const isVoiceReader = ref(
@@ -407,6 +409,16 @@ const radialOptions = computed(() => [
     action: toggleParkinsonMode
   },
   {
+    id: 'dyslexia',
+    icon: '📝',
+    label: 'Dislexia',
+    title: 'Modo Dislexia',
+    showLabel: false,
+    hasSubmenu: false,
+    isActive: isDyslexiaModeEnabled.value,
+    action: toggleDyslexiaMode
+  },
+  {
     id: 'voiceReader',
     icon: '🔊',
     label: 'Voz',
@@ -454,12 +466,76 @@ const closeSubmenu = () => {
 
 // Calcular posición del submenú
 const getSubmenuPosition = () => {
-  if (!activeSubmenu.value) return {}
+  if (!activeSubmenu.value || typeof window === 'undefined') return {}
   
   const index = radialOptions.value.findIndex(o => o.id === activeSubmenu.value.id)
   const angle = (index * 2 * Math.PI) / radialOptions.value.length - Math.PI / 2
-  const x = Math.cos(angle) * (radialRadius + 60)
-  const y = Math.sin(angle) * (radialRadius + 60)
+  
+  // Posición inicial basada en el ángulo radial (relativa al centro del botón)
+  // El submenú se posiciona más lejos que los items radiales
+  const baseDistance = radialRadius + 60
+  let x = Math.cos(angle) * baseDistance
+  let y = Math.sin(angle) * baseDistance
+  
+  // Dimensiones del submenú
+  const submenuWidth = 200
+  const submenuHeight = 120 // Altura aproximada del submenú
+  const buttonSize = 64
+  const margin = 10 // Margen mínimo desde los bordes
+  
+  // Calcular posición absoluta del centro del botón en la pantalla
+  // position.x y position.y son relativos a bottom y right
+  const buttonCenterX = window.innerWidth - position.x - buttonSize / 2
+  const buttonCenterY = window.innerHeight - position.y - buttonSize / 2
+  
+  // Calcular posición absoluta del centro del submenú
+  let submenuCenterX = buttonCenterX + x
+  let submenuCenterY = buttonCenterY - y // Invertir Y porque CSS usa coordenadas desde arriba
+  
+  // Calcular bordes del submenú
+  let submenuLeft = submenuCenterX - submenuWidth / 2
+  let submenuRight = submenuCenterX + submenuWidth / 2
+  let submenuTop = submenuCenterY - submenuHeight / 2
+  let submenuBottom = submenuCenterY + submenuHeight / 2
+  
+  // Ajustar posición horizontal si se sale de los bordes
+  if (submenuRight > window.innerWidth - margin) {
+    // Se sale por la derecha, posicionar a la izquierda del botón
+    x = -(baseDistance + submenuWidth / 2)
+  } else if (submenuLeft < margin) {
+    // Se sale por la izquierda, posicionar a la derecha del botón
+    x = baseDistance + submenuWidth / 2
+  }
+  
+  // Recalcular posición vertical con el nuevo x
+  submenuCenterX = buttonCenterX + x
+  submenuCenterY = buttonCenterY - y
+  submenuLeft = submenuCenterX - submenuWidth / 2
+  submenuRight = submenuCenterX + submenuWidth / 2
+  submenuTop = submenuCenterY - submenuHeight / 2
+  submenuBottom = submenuCenterY + submenuHeight / 2
+  
+  // Ajustar posición vertical si se sale de los bordes
+  // Caso especial: si el submenú está arriba (y negativo) y el botón está cerca del borde superior
+  const isSubmenuAbove = y < 0
+  const isSubmenuBelow = y > 0
+  const spaceAbove = buttonCenterY - margin
+  const spaceBelow = window.innerHeight - buttonCenterY - margin
+  
+  if (submenuBottom > window.innerHeight - margin) {
+    // Se sale por abajo, posicionar arriba del botón
+    y = -(baseDistance + submenuHeight / 2)
+  } else if (submenuTop < margin) {
+    // Se sale por arriba, posicionar abajo del botón
+    y = baseDistance + submenuHeight / 2
+  } else if (isSubmenuAbove && spaceAbove < submenuHeight + margin) {
+    // El submenú está arriba pero no hay suficiente espacio, moverlo abajo
+    y = baseDistance + submenuHeight / 2
+  } else if (isSubmenuBelow && spaceBelow < submenuHeight + margin) {
+    // El submenú está abajo pero no hay suficiente espacio (botón cerca del borde inferior)
+    // Moverlo arriba del botón
+    y = -(baseDistance + submenuHeight / 2)
+  }
   
   return {
     '--x': `${x}px`,
@@ -604,6 +680,9 @@ onBeforeUnmount(() => {
   position: fixed;
   z-index: 10000;
   user-select: none;
+  isolation: isolate;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 /* Botón circular flotante */

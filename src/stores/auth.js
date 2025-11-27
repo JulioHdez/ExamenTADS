@@ -172,9 +172,30 @@ export const useAuthStore = defineStore('auth', {
         localStorage.removeItem('auth_token')
         localStorage.removeItem('user_type')
         localStorage.removeItem('user_role')
+        
+        // Limpiar preferencias de accesibilidad
+        localStorage.removeItem('dyslexia-mode-enabled')
+        localStorage.removeItem('accessibility-dyslexiaMode')
+        
         console.log('localStorage limpiado')
       } catch (error) {
         console.error('Error al limpiar localStorage:', error)
+      }
+      
+      // Desactivar modo dislexia si está activo
+      if (typeof window !== 'undefined' && document.body) {
+        try {
+          // Remover clase de dislexia del body
+          document.body.classList.remove('dyslexia-mode-enabled')
+          
+          // Remover estilos de dislexia
+          const dyslexiaStyle = document.getElementById('dyslexia-accessibility-styles')
+          if (dyslexiaStyle) {
+            dyslexiaStyle.remove()
+          }
+        } catch (error) {
+          console.warn('Error al desactivar modo dislexia:', error)
+        }
       }
       
       // Limpiar estado local inmediatamente

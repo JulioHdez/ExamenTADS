@@ -11,6 +11,7 @@ CREATE TABLE [dbo].[preferencias_accesibilidad](
     [text_highlight] [bit] NULL DEFAULT 0,
     [parkinson_mode] [bit] NULL DEFAULT 0,
     [voice_reader] [bit] NULL DEFAULT 0,
+    [dyslexia_mode] [bit] NULL DEFAULT 0,
     [menu_position_x] [int] NULL,
     [menu_position_y] [int] NULL,
     [fecha_creacion] [datetime] NULL DEFAULT (getdate()),

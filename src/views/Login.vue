@@ -85,6 +85,7 @@ import { useColorBlindness } from '@/composables/useColorBlindness'
 import { useCursorSize } from '@/composables/useCursorSize'
 import { useTextHighlight } from '@/composables/useTextHighlight'
 import { useParkinsonAccessibility } from '@/composables/useParkinsonAccessibility'
+import { useDyslexia } from '@/composables/useDyslexia'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -295,6 +296,7 @@ onMounted(() => {
   const { cursorSize, decreaseCursorSize, increaseCursorSize } = useCursorSize()
   const { isTextHighlightEnabled, toggleTextHighlight } = useTextHighlight()
   const { isParkinsonModeEnabled, toggleParkinsonMode } = useParkinsonAccessibility()
+  const { isDyslexiaModeEnabled, toggleDyslexiaMode } = useDyslexia()
   
   // Resetear a valores por defecto
   if (isDarkMode.value) {
@@ -333,6 +335,10 @@ onMounted(() => {
     toggleParkinsonMode()
   }
   
+  if (isDyslexiaModeEnabled.value) {
+    toggleDyslexiaMode()
+  }
+  
   // Limpiar posición del menú y preferencias de localStorage
   if (typeof window !== 'undefined' && localStorage) {
     try {
@@ -347,6 +353,8 @@ onMounted(() => {
       localStorage.removeItem('text-highlight-enabled')
       localStorage.removeItem('parkinson-mode-enabled')
       localStorage.removeItem('voice-reader')
+      localStorage.removeItem('dyslexia-mode-enabled')
+      localStorage.removeItem('accessibility-dyslexiaMode')
     } catch (error) {
       console.warn('Error al limpiar preferencias:', error)
     }

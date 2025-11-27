@@ -29,6 +29,7 @@ export const savePreferencesToBackend = async (prefs) => {
       text_highlight: prefs.textHighlight ?? false,
       parkinson_mode: prefs.parkinsonMode ?? false,
       voice_reader: prefs.voiceReader ?? false,
+      dyslexia_mode: prefs.dyslexiaMode ?? false,
       menu_position_x: prefs.menuPositionX ?? null,
       menu_position_y: prefs.menuPositionY ?? null
     }
@@ -79,6 +80,7 @@ export const loadPreferencesFromBackend = async () => {
         textHighlight: response.data.data.text_highlight ?? false,
         parkinsonMode: response.data.data.parkinson_mode ?? false,
         voiceReader: response.data.data.voice_reader ?? false,
+        dyslexiaMode: response.data.data.dyslexia_mode ?? false,
         menuPositionX: response.data.data.menu_position_x ?? null,
         menuPositionY: response.data.data.menu_position_y ?? null
       }
@@ -104,6 +106,7 @@ const fieldMapping = {
   'textHighlight': 'text_highlight',
   'parkinsonMode': 'parkinson_mode',
   'voiceReader': 'voice_reader',
+  'dyslexiaMode': 'dyslexia_mode',
   'menuPositionX': 'menu_position_x',
   'menuPositionY': 'menu_position_y'
 }
@@ -179,7 +182,7 @@ export const loadPreferencesFromLocalStorage = () => {
   try {
     const keys = [
       'darkMode', 'zoomLevel', 'greyMode', 'colorBlindnessType',
-      'cursorSize', 'textHighlight', 'parkinsonMode', 'voiceReader',
+      'cursorSize', 'textHighlight', 'parkinsonMode', 'voiceReader', 'dyslexiaMode',
       'menuPositionX', 'menuPositionY'
     ]
     
@@ -218,6 +221,7 @@ export const applyPreferencesToComposables = async (prefs) => {
     const { useCursorSize } = await import('./useCursorSize')
     const { useTextHighlight } = await import('./useTextHighlight')
     const { useParkinsonAccessibility } = await import('./useParkinsonAccessibility')
+    const { useDyslexia } = await import('./useDyslexia')
     
     const { isDarkMode, toggleDarkMode } = useDarkMode()
     const { zoomLevel, zoomIn, zoomOut } = useZoom()
@@ -226,6 +230,7 @@ export const applyPreferencesToComposables = async (prefs) => {
     const { cursorSize, increaseCursorSize, decreaseCursorSize } = useCursorSize()
     const { isTextHighlightEnabled, toggleTextHighlight } = useTextHighlight()
     const { isParkinsonModeEnabled, toggleParkinsonMode } = useParkinsonAccessibility()
+    const { isDyslexiaModeEnabled, toggleDyslexiaMode } = useDyslexia()
     
     // Aplicar dark mode (solo si es diferente)
     if (prefs.darkMode !== undefined && isDarkMode.value !== prefs.darkMode) {
@@ -301,6 +306,12 @@ export const applyPreferencesToComposables = async (prefs) => {
     // Aplicar parkinson mode (solo si es diferente)
     if (prefs.parkinsonMode !== undefined && isParkinsonModeEnabled.value !== prefs.parkinsonMode) {
       toggleParkinsonMode()
+      await new Promise(resolve => setTimeout(resolve, 50))
+    }
+    
+    // Aplicar dyslexia mode (solo si es diferente)
+    if (prefs.dyslexiaMode !== undefined && isDyslexiaModeEnabled.value !== prefs.dyslexiaMode) {
+      toggleDyslexiaMode()
       await new Promise(resolve => setTimeout(resolve, 50))
     }
   } catch (error) {
