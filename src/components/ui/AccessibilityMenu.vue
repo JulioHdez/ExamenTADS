@@ -109,6 +109,80 @@
                   </option>
                 </select>
               </template>
+
+              <template v-else-if="activeSubmenu.id === 'dyslexia'">
+                <div class="submenu-spacing-controls">
+                  <!-- Toggle para activar/desactivar modo dislexia -->
+                  <div class="submenu-toggle-section">
+                    <label class="submenu-toggle-label">
+                      <input 
+                        type="checkbox" 
+                        :checked="isDyslexiaModeEnabled" 
+                        @change="toggleDyslexiaMode"
+                        class="submenu-toggle-checkbox"
+                      />
+                      <span>Activar Modo Dislexia</span>
+                    </label>
+                    <p v-if="!isDyslexiaModeEnabled" class="submenu-info-text">
+                      ⚠️ Activa el modo dislexia para ver los cambios en tiempo real
+                    </p>
+                  </div>
+                  
+                  <!-- Controles de espaciado entre letras -->
+                  <div class="submenu-spacing-item">
+                    <label class="submenu-spacing-label">Espaciado entre letras</label>
+                    <div class="submenu-controls">
+                      <button @click="decreaseLetterSpacing" class="submenu-btn" :disabled="!canDecreaseLetterSpacing" aria-label="Disminuir espaciado">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5H6" />
+                        </svg>
+                      </button>
+                      <span class="submenu-value">{{ letterSpacingDisplay }}</span>
+                      <button @click="increaseLetterSpacing" class="submenu-btn" :disabled="!canIncreaseLetterSpacing" aria-label="Aumentar espaciado">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Controles de espaciado entre palabras -->
+                  <div class="submenu-spacing-item">
+                    <label class="submenu-spacing-label">Espaciado entre palabras</label>
+                    <div class="submenu-controls">
+                      <button @click="decreaseWordSpacing" class="submenu-btn" :disabled="!canDecreaseWordSpacing" aria-label="Disminuir espaciado">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5H6" />
+                        </svg>
+                      </button>
+                      <span class="submenu-value">{{ wordSpacingDisplay }}</span>
+                      <button @click="increaseWordSpacing" class="submenu-btn" :disabled="!canIncreaseWordSpacing" aria-label="Aumentar espaciado">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Controles de altura de línea -->
+                  <div class="submenu-spacing-item">
+                    <label class="submenu-spacing-label">Altura de línea</label>
+                    <div class="submenu-controls">
+                      <button @click="decreaseLineHeight" class="submenu-btn" :disabled="!canDecreaseLineHeight" aria-label="Disminuir altura">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM13.5 10.5H6" />
+                        </svg>
+                      </button>
+                      <span class="submenu-value">{{ lineHeightDisplay }}</span>
+                      <button @click="increaseLineHeight" class="submenu-btn" :disabled="!canIncreaseLineHeight" aria-label="Aumentar altura">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </template>
             </div>
           </div>
         </Transition>
@@ -326,7 +400,25 @@ const { colorBlindnessType, setColorBlindnessType, colorBlindnessTypes } = useCo
 const { cursorSize, cursorSizeDisplay, canIncreaseCursor, canDecreaseCursor, increaseCursorSize, decreaseCursorSize } = useCursorSize()
 const { isTextHighlightEnabled, toggleTextHighlight } = useTextHighlight()
 const { isParkinsonModeEnabled, toggleParkinsonMode } = useParkinsonAccessibility()
-const { isDyslexiaModeEnabled, toggleDyslexiaMode } = useDyslexia()
+const { 
+  isDyslexiaModeEnabled, 
+  toggleDyslexiaMode,
+  letterSpacingDisplay,
+  wordSpacingDisplay,
+  lineHeightDisplay,
+  increaseLetterSpacing,
+  decreaseLetterSpacing,
+  increaseWordSpacing,
+  decreaseWordSpacing,
+  increaseLineHeight,
+  decreaseLineHeight,
+  canIncreaseLetterSpacing,
+  canDecreaseLetterSpacing,
+  canIncreaseWordSpacing,
+  canDecreaseWordSpacing,
+  canIncreaseLineHeight,
+  canDecreaseLineHeight
+} = useDyslexia()
 
 // Lectura en voz alta
 const isVoiceReader = ref(
@@ -414,9 +506,8 @@ const radialOptions = computed(() => [
     label: 'Dislexia',
     title: 'Modo Dislexia',
     showLabel: false,
-    hasSubmenu: false,
-    isActive: isDyslexiaModeEnabled.value,
-    action: toggleDyslexiaMode
+    hasSubmenu: true,
+    isActive: isDyslexiaModeEnabled.value
   },
   {
     id: 'voiceReader',
@@ -999,6 +1090,76 @@ onBeforeUnmount(() => {
   background: #1e293b;
   border-color: #334155;
   color: #f1f5f9;
+}
+
+/* Controles de espaciado para dislexia */
+.submenu-spacing-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.submenu-toggle-section {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 0.5rem;
+}
+
+.dark .submenu-toggle-section {
+  border-bottom-color: #334155;
+}
+
+.submenu-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+}
+
+.dark .submenu-toggle-label {
+  color: #e2e8f0;
+}
+
+.submenu-toggle-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #3b82f6;
+}
+
+.submenu-spacing-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.submenu-spacing-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.dark .submenu-spacing-label {
+  color: #9ca3af;
+}
+
+.submenu-info-text {
+  font-size: 0.75rem;
+  color: #f59e0b;
+  margin-top: 0.5rem;
+  margin-bottom: 0;
+  padding: 0.5rem;
+  background: rgba(245, 158, 11, 0.1);
+  border-radius: 4px;
+  border-left: 3px solid #f59e0b;
+}
+
+.dark .submenu-info-text {
+  color: #fbbf24;
+  background: rgba(245, 158, 11, 0.15);
 }
 
 /* Transiciones del menú radial */

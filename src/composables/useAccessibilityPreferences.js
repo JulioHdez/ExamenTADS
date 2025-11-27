@@ -30,6 +30,9 @@ export const savePreferencesToBackend = async (prefs) => {
       parkinson_mode: prefs.parkinsonMode ?? false,
       voice_reader: prefs.voiceReader ?? false,
       dyslexia_mode: prefs.dyslexiaMode ?? false,
+      dyslexia_letter_spacing: prefs.dyslexiaLetterSpacing ?? 0.03,
+      dyslexia_word_spacing: prefs.dyslexiaWordSpacing ?? 0.08,
+      dyslexia_line_height: prefs.dyslexiaLineHeight ?? 1.50,
       menu_position_x: prefs.menuPositionX ?? null,
       menu_position_y: prefs.menuPositionY ?? null
     }
@@ -81,6 +84,9 @@ export const loadPreferencesFromBackend = async () => {
         parkinsonMode: response.data.data.parkinson_mode ?? false,
         voiceReader: response.data.data.voice_reader ?? false,
         dyslexiaMode: response.data.data.dyslexia_mode ?? false,
+        dyslexiaLetterSpacing: response.data.data.dyslexia_letter_spacing ?? 0.03,
+        dyslexiaWordSpacing: response.data.data.dyslexia_word_spacing ?? 0.08,
+        dyslexiaLineHeight: response.data.data.dyslexia_line_height ?? 1.50,
         menuPositionX: response.data.data.menu_position_x ?? null,
         menuPositionY: response.data.data.menu_position_y ?? null
       }
@@ -107,6 +113,9 @@ const fieldMapping = {
   'parkinsonMode': 'parkinson_mode',
   'voiceReader': 'voice_reader',
   'dyslexiaMode': 'dyslexia_mode',
+  'dyslexiaLetterSpacing': 'dyslexia_letter_spacing',
+  'dyslexiaWordSpacing': 'dyslexia_word_spacing',
+  'dyslexiaLineHeight': 'dyslexia_line_height',
   'menuPositionX': 'menu_position_x',
   'menuPositionY': 'menu_position_y'
 }
@@ -183,6 +192,7 @@ export const loadPreferencesFromLocalStorage = () => {
     const keys = [
       'darkMode', 'zoomLevel', 'greyMode', 'colorBlindnessType',
       'cursorSize', 'textHighlight', 'parkinsonMode', 'voiceReader', 'dyslexiaMode',
+      'dyslexiaLetterSpacing', 'dyslexiaWordSpacing', 'dyslexiaLineHeight',
       'menuPositionX', 'menuPositionY'
     ]
     
@@ -230,7 +240,14 @@ export const applyPreferencesToComposables = async (prefs) => {
     const { cursorSize, increaseCursorSize, decreaseCursorSize } = useCursorSize()
     const { isTextHighlightEnabled, toggleTextHighlight } = useTextHighlight()
     const { isParkinsonModeEnabled, toggleParkinsonMode } = useParkinsonAccessibility()
-    const { isDyslexiaModeEnabled, toggleDyslexiaMode } = useDyslexia()
+    const { 
+      isDyslexiaModeEnabled, 
+      toggleDyslexiaMode,
+      letterSpacing,
+      wordSpacing,
+      lineHeight,
+      applyDyslexiaAccessibility
+    } = useDyslexia()
     
     // Aplicar dark mode (solo si es diferente)
     if (prefs.darkMode !== undefined && isDarkMode.value !== prefs.darkMode) {
@@ -313,6 +330,28 @@ export const applyPreferencesToComposables = async (prefs) => {
     if (prefs.dyslexiaMode !== undefined && isDyslexiaModeEnabled.value !== prefs.dyslexiaMode) {
       toggleDyslexiaMode()
       await new Promise(resolve => setTimeout(resolve, 50))
+    }
+    
+    // Aplicar valores de espaciado de dislexia directamente
+    if (prefs.dyslexiaLetterSpacing !== undefined && letterSpacing.value !== prefs.dyslexiaLetterSpacing) {
+      letterSpacing.value = parseFloat(prefs.dyslexiaLetterSpacing)
+      if (isDyslexiaModeEnabled.value) {
+        applyDyslexiaAccessibility(true)
+      }
+    }
+    
+    if (prefs.dyslexiaWordSpacing !== undefined && wordSpacing.value !== prefs.dyslexiaWordSpacing) {
+      wordSpacing.value = parseFloat(prefs.dyslexiaWordSpacing)
+      if (isDyslexiaModeEnabled.value) {
+        applyDyslexiaAccessibility(true)
+      }
+    }
+    
+    if (prefs.dyslexiaLineHeight !== undefined && lineHeight.value !== prefs.dyslexiaLineHeight) {
+      lineHeight.value = parseFloat(prefs.dyslexiaLineHeight)
+      if (isDyslexiaModeEnabled.value) {
+        applyDyslexiaAccessibility(true)
+      }
     }
   } catch (error) {
     console.error('Error al aplicar preferencias a los composables:', error)

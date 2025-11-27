@@ -1,10 +1,29 @@
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useAccessibilityPreferences } from './useAccessibilityPreferences'
 
 const isDyslexiaModeEnabled = ref(
   typeof window !== 'undefined' 
     ? localStorage.getItem('dyslexia-mode-enabled') === 'true'
     : false
+)
+
+// Valores ajustables de espaciado (valores por defecto)
+const letterSpacing = ref(
+  typeof window !== 'undefined' && localStorage
+    ? parseFloat(localStorage.getItem('dyslexia-letter-spacing') || '0.03')
+    : 0.03
+)
+
+const wordSpacing = ref(
+  typeof window !== 'undefined' && localStorage
+    ? parseFloat(localStorage.getItem('dyslexia-word-spacing') || '0.08')
+    : 0.08
+)
+
+const lineHeight = ref(
+  typeof window !== 'undefined' && localStorage
+    ? parseFloat(localStorage.getItem('dyslexia-line-height') || '1.5')
+    : 1.5
 )
 
 // Aplicar estilos para dislexia
@@ -25,9 +44,9 @@ const applyDyslexiaAccessibility = (enabled) => {
       /* Fuente más legible para dislexia - aplicar solo a texto, no a todos los elementos */
       body.dyslexia-mode-enabled {
         font-family: 'Comic Sans MS', 'Comic Sans', 'Chalkboard SE', 'Comic Neue', sans-serif !important;
-        letter-spacing: 0.03em !important;
-        word-spacing: 0.08em !important;
-        line-height: 1.5 !important;
+        letter-spacing: ${letterSpacing.value}em !important;
+        word-spacing: ${wordSpacing.value}em !important;
+        line-height: ${lineHeight.value} !important;
       }
       
       /* Aplicar fuente solo a elementos de texto, no a contenedores */
@@ -44,9 +63,9 @@ const applyDyslexiaAccessibility = (enabled) => {
       body.dyslexia-mode-enabled h5,
       body.dyslexia-mode-enabled h6 {
         font-family: 'Comic Sans MS', 'Comic Sans', 'Chalkboard SE', 'Comic Neue', sans-serif !important;
-        letter-spacing: 0.03em !important;
-        word-spacing: 0.08em !important;
-        line-height: 1.5 !important;
+        letter-spacing: ${letterSpacing.value}em !important;
+        word-spacing: ${wordSpacing.value}em !important;
+        line-height: ${lineHeight.value} !important;
       }
       
       /* Aumentar tamaño de fuente para mejor legibilidad */
@@ -93,8 +112,8 @@ const applyDyslexiaAccessibility = (enabled) => {
       body.dyslexia-mode-enabled textarea,
       body.dyslexia-mode-enabled select {
         font-family: 'Comic Sans MS', 'Comic Sans', 'Chalkboard SE', 'Comic Neue', sans-serif !important;
-        letter-spacing: 0.03em !important;
-        line-height: 1.5 !important;
+        letter-spacing: ${letterSpacing.value}em !important;
+        line-height: ${lineHeight.value} !important;
         font-size: 1.2em !important;
       }
       
@@ -243,6 +262,112 @@ const applyDyslexiaAccessibility = (enabled) => {
 export const useDyslexia = () => {
   const { updatePreference } = useAccessibilityPreferences()
   
+  // Funciones para ajustar espaciado
+  const increaseLetterSpacing = () => {
+    if (letterSpacing.value < 0.2) {
+      letterSpacing.value = Math.round((letterSpacing.value + 0.02) * 100) / 100
+      saveSpacingValues()
+      // Aplicar estilos inmediatamente si el modo está activado
+      if (isDyslexiaModeEnabled.value) {
+        applyDyslexiaAccessibility(true)
+      }
+    }
+  }
+  
+  const decreaseLetterSpacing = () => {
+    if (letterSpacing.value > 0) {
+      letterSpacing.value = Math.round((letterSpacing.value - 0.02) * 100) / 100
+      saveSpacingValues()
+      // Aplicar estilos inmediatamente si el modo está activado
+      if (isDyslexiaModeEnabled.value) {
+        applyDyslexiaAccessibility(true)
+      }
+    }
+  }
+  
+  const increaseWordSpacing = () => {
+    if (wordSpacing.value < 0.4) {
+      wordSpacing.value = Math.round((wordSpacing.value + 0.03) * 100) / 100
+      saveSpacingValues()
+      // Aplicar estilos inmediatamente si el modo está activado
+      if (isDyslexiaModeEnabled.value) {
+        applyDyslexiaAccessibility(true)
+      }
+    }
+  }
+  
+  const decreaseWordSpacing = () => {
+    if (wordSpacing.value > 0) {
+      wordSpacing.value = Math.round((wordSpacing.value - 0.03) * 100) / 100
+      saveSpacingValues()
+      // Aplicar estilos inmediatamente si el modo está activado
+      if (isDyslexiaModeEnabled.value) {
+        applyDyslexiaAccessibility(true)
+      }
+    }
+  }
+  
+  const increaseLineHeight = () => {
+    if (lineHeight.value < 3.0) {
+      lineHeight.value = Math.round((lineHeight.value + 0.15) * 100) / 100
+      saveSpacingValues()
+      // Aplicar estilos inmediatamente si el modo está activado
+      if (isDyslexiaModeEnabled.value) {
+        applyDyslexiaAccessibility(true)
+      }
+    }
+  }
+  
+  const decreaseLineHeight = () => {
+    if (lineHeight.value > 1.0) {
+      lineHeight.value = Math.round((lineHeight.value - 0.15) * 100) / 100
+      saveSpacingValues()
+      // Aplicar estilos inmediatamente si el modo está activado
+      if (isDyslexiaModeEnabled.value) {
+        applyDyslexiaAccessibility(true)
+      }
+    }
+  }
+  
+  // Guardar valores de espaciado
+  const saveSpacingValues = async () => {
+    if (typeof window !== 'undefined' && localStorage) {
+      localStorage.setItem('dyslexia-letter-spacing', letterSpacing.value.toString())
+      localStorage.setItem('dyslexia-word-spacing', wordSpacing.value.toString())
+      localStorage.setItem('dyslexia-line-height', lineHeight.value.toString())
+    }
+    
+    // Guardar en backend si está autenticado
+    try {
+      await updatePreference('dyslexiaLetterSpacing', letterSpacing.value)
+      await updatePreference('dyslexiaWordSpacing', wordSpacing.value)
+      await updatePreference('dyslexiaLineHeight', lineHeight.value)
+    } catch (error) {
+      console.warn('Error al guardar valores de espaciado en backend:', error)
+    }
+  }
+  
+  // Valores computados para mostrar
+  const letterSpacingDisplay = computed(() => {
+    return `${Math.round(letterSpacing.value * 100)}%`
+  })
+  
+  const wordSpacingDisplay = computed(() => {
+    return `${Math.round(wordSpacing.value * 100)}%`
+  })
+  
+  const lineHeightDisplay = computed(() => {
+    return lineHeight.value.toFixed(1)
+  })
+  
+  // Límites para los botones
+  const canIncreaseLetterSpacing = computed(() => letterSpacing.value < 0.2)
+  const canDecreaseLetterSpacing = computed(() => letterSpacing.value > 0)
+  const canIncreaseWordSpacing = computed(() => wordSpacing.value < 0.4)
+  const canDecreaseWordSpacing = computed(() => wordSpacing.value > 0)
+  const canIncreaseLineHeight = computed(() => lineHeight.value < 3.0)
+  const canDecreaseLineHeight = computed(() => lineHeight.value > 1.0)
+  
   // Inicializar dislexia solo cuando se use el composable
   if (typeof window !== 'undefined') {
     // Aplicar el estado guardado al cargar
@@ -273,6 +398,13 @@ export const useDyslexia = () => {
         }
       }
     })
+    
+    // Observar cambios en los valores de espaciado
+    watch([letterSpacing, wordSpacing, lineHeight], () => {
+      if (isDyslexiaModeEnabled.value) {
+        applyDyslexiaAccessibility(true)
+      }
+    })
   }
   
   const toggleDyslexiaMode = () => {
@@ -281,7 +413,26 @@ export const useDyslexia = () => {
   
   return {
     isDyslexiaModeEnabled,
-    toggleDyslexiaMode
+    toggleDyslexiaMode,
+    letterSpacing,
+    wordSpacing,
+    lineHeight,
+    letterSpacingDisplay,
+    wordSpacingDisplay,
+    lineHeightDisplay,
+    increaseLetterSpacing,
+    decreaseLetterSpacing,
+    increaseWordSpacing,
+    decreaseWordSpacing,
+    increaseLineHeight,
+    decreaseLineHeight,
+    canIncreaseLetterSpacing,
+    canDecreaseLetterSpacing,
+    canIncreaseWordSpacing,
+    canDecreaseWordSpacing,
+    canIncreaseLineHeight,
+    canDecreaseLineHeight,
+    applyDyslexiaAccessibility
   }
 }
 

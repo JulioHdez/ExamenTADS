@@ -41,6 +41,9 @@ class PreferenciaAccesibilidad extends BaseModel {
                 parkinson_mode,
                 voice_reader,
                 dyslexia_mode,
+                dyslexia_letter_spacing,
+                dyslexia_word_spacing,
+                dyslexia_line_height,
                 menu_position_x,
                 menu_position_y
             } = preferencias;
@@ -62,6 +65,9 @@ class PreferenciaAccesibilidad extends BaseModel {
                     .input('parkinson_mode', mssql.Bit, parkinson_mode ?? existentes.parkinson_mode)
                     .input('voice_reader', mssql.Bit, voice_reader ?? existentes.voice_reader)
                     .input('dyslexia_mode', mssql.Bit, dyslexia_mode ?? existentes.dyslexia_mode)
+                    .input('dyslexia_letter_spacing', mssql.Decimal(5,2), dyslexia_letter_spacing ?? existentes.dyslexia_letter_spacing ?? 0.03)
+                    .input('dyslexia_word_spacing', mssql.Decimal(5,2), dyslexia_word_spacing ?? existentes.dyslexia_word_spacing ?? 0.08)
+                    .input('dyslexia_line_height', mssql.Decimal(5,2), dyslexia_line_height ?? existentes.dyslexia_line_height ?? 1.50)
                     .input('menu_position_x', mssql.Int, menu_position_x ?? existentes.menu_position_x)
                     .input('menu_position_y', mssql.Int, menu_position_y ?? existentes.menu_position_y)
                     .query(`
@@ -76,6 +82,9 @@ class PreferenciaAccesibilidad extends BaseModel {
                             parkinson_mode = @parkinson_mode,
                             voice_reader = @voice_reader,
                             dyslexia_mode = @dyslexia_mode,
+                            dyslexia_letter_spacing = @dyslexia_letter_spacing,
+                            dyslexia_word_spacing = @dyslexia_word_spacing,
+                            dyslexia_line_height = @dyslexia_line_height,
                             menu_position_x = @menu_position_x,
                             menu_position_y = @menu_position_y,
                             fecha_actualizacion = GETDATE()
@@ -100,17 +109,22 @@ class PreferenciaAccesibilidad extends BaseModel {
                     .input('parkinson_mode', mssql.Bit, parkinson_mode ?? 0)
                     .input('voice_reader', mssql.Bit, voice_reader ?? 0)
                     .input('dyslexia_mode', mssql.Bit, dyslexia_mode ?? 0)
+                    .input('dyslexia_letter_spacing', mssql.Decimal(5,2), dyslexia_letter_spacing ?? 0.03)
+                    .input('dyslexia_word_spacing', mssql.Decimal(5,2), dyslexia_word_spacing ?? 0.08)
+                    .input('dyslexia_line_height', mssql.Decimal(5,2), dyslexia_line_height ?? 1.50)
                     .input('menu_position_x', mssql.Int, menu_position_x)
                     .input('menu_position_y', mssql.Int, menu_position_y)
                     .query(`
                         INSERT INTO ${this.tableName} 
                         (id_usuario, tipo_usuario, dark_mode, zoom_level, grey_mode, 
                          color_blindness_type, cursor_size, text_highlight, parkinson_mode, 
-                         voice_reader, dyslexia_mode, menu_position_x, menu_position_y)
+                         voice_reader, dyslexia_mode, dyslexia_letter_spacing, dyslexia_word_spacing, 
+                         dyslexia_line_height, menu_position_x, menu_position_y)
                         VALUES 
                         (@id_usuario, @tipo_usuario, @dark_mode, @zoom_level, @grey_mode,
                          @color_blindness_type, @cursor_size, @text_highlight, @parkinson_mode,
-                         @voice_reader, @dyslexia_mode, @menu_position_x, @menu_position_y)
+                         @voice_reader, @dyslexia_mode, @dyslexia_letter_spacing, @dyslexia_word_spacing,
+                         @dyslexia_line_height, @menu_position_x, @menu_position_y)
                         
                         SELECT * FROM ${this.tableName}
                         WHERE id_preferencia = SCOPE_IDENTITY()
@@ -140,6 +154,9 @@ class PreferenciaAccesibilidad extends BaseModel {
                 'parkinson_mode': mssql.Bit,
                 'voice_reader': mssql.Bit,
                 'dyslexia_mode': mssql.Bit,
+                'dyslexia_letter_spacing': mssql.Decimal(5,2),
+                'dyslexia_word_spacing': mssql.Decimal(5,2),
+                'dyslexia_line_height': mssql.Decimal(5,2),
                 'menu_position_x': mssql.Int,
                 'menu_position_y': mssql.Int
             };
@@ -175,6 +192,9 @@ class PreferenciaAccesibilidad extends BaseModel {
                     parkinson_mode: false,
                     voice_reader: false,
                     dyslexia_mode: false,
+                    dyslexia_letter_spacing: 0.03,
+                    dyslexia_word_spacing: 0.08,
+                    dyslexia_line_height: 1.50,
                     menu_position_x: null,
                     menu_position_y: null
                 };
