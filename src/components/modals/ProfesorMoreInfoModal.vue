@@ -126,6 +126,7 @@
             <li><strong>🖱️ Tamaño del Puntero:</strong> Aumenta o disminuye el tamaño del cursor para facilitar su visualización</li>
             <li><strong>📖 Resaltar Texto:</strong> Activa el resaltado automático del texto al pasar el cursor sobre él</li>
             <li><strong>🤲 Modo Parkinson:</strong> Reduce las animaciones y efectos visuales para usuarios con temblores</li>
+            <li><strong>📝 Modo Dislexia:</strong> Aplica fuentes más legibles, aumenta el espaciado entre letras y palabras, y mejora el tamaño del texto para facilitar la lectura</li>
             <li><strong>🔊 Lectura en Voz Alta:</strong> Activa la lectura automática del texto al pasar el cursor sobre los elementos</li>
           </ul>
           <div class="info-tip">
